@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { supabase } from './config/supabase';
-import { Toaster } from 'react-hot-toast'; // በትክክል እዚህ ጋር import ይደረጋል
+import { Toaster } from 'react-hot-toast';
 
 // Layouts
 import MainLayout from './components/layout/MainLayout';
@@ -16,6 +16,7 @@ import JobDetails from './features/jobs/components/JobDetails';
 import PublicProfile from './features/profiles/components/PublicProfile';
 import AdminDashboard from './features/admin/components/AdminDashboard';
 import ProfileSettings from './features/profiles/components/ProfileSettings';
+import NotificationHistory from './features/notifications/components/NotificationHistory';
 import AboutUs from './pages/AboutUs';
 import Connect from './pages/Connect';
 
@@ -25,14 +26,12 @@ function App() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // 1. ሴሽን መኖሩን ማረጋገጥ
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       if (session) fetchUserRole(session.user.id);
       else setLoading(false);
     });
 
-    // 2. የሴሽን ለውጦችን መከታተል
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       if (session) fetchUserRole(session.user.id);
@@ -61,38 +60,26 @@ function App() {
 
   return (
     <BrowserRouter>
-      {/* Toaster እዚህ ጋር ይቀመጣል - በሁሉም ገጾች ላይ እንዲሰራ */}
       <Toaster
         position="top-right"
         toastOptions={{
           style: {
-            background: '#111', // Elite Dark
-            color: '#d4af37',   // Elite Gold
+            background: '#111',
+            color: '#d4af37',
             border: '1px solid #d4af37',
             padding: '16px',
             borderRadius: '8px',
             fontSize: '14px',
-            fontFamily: 'inherit'
           },
           success: {
             duration: 4000,
-            iconTheme: {
-              primary: '#d4af37',
-              secondary: '#111',
-            },
+            iconTheme: { primary: '#d4af37', secondary: '#111' },
           },
-          error: {
-            duration: 5000,
-            style: {
-              border: '1px solid #ff4b4b',
-              color: '#ff4b4b',
-            }
-          }
         }}
       />
 
       <Routes>
-        {/* --- 1. የህዝብ ገጾች (Public Routes) --- */}
+        {/* --- 1. Public Routes --- */}
         <Route element={<MainLayout />}>
           <Route path="/" element={<LandingPage />} />
           <Route path="/about" element={<AboutUs />} />
@@ -107,7 +94,7 @@ function App() {
           element={session && userRole === 'admin' ? <AdminDashboard /> : <Navigate to="/dashboard" />} 
         />
 
-        {/* --- 3. የዳሽቦርድ ገጾች (Protected Routes) --- */}
+        {/* --- 3. Protected Dashboard Routes --- */}
         <Route 
           path="/dashboard" 
           element={session ? <DashboardLayout userRole={userRole} /> : <Navigate to="/login" />}
@@ -116,6 +103,7 @@ function App() {
           <Route path="post-job" element={<PostJob />} />
           <Route path="jobs/:id" element={<JobDetails />} />
           <Route path="settings" element={<ProfileSettings />} />
+          <Route path="notifications" element={<NotificationHistory />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/" />} />
