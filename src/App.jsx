@@ -4,7 +4,7 @@ import { supabase } from './config/supabase';
 import { Toaster } from 'react-hot-toast';
 
 // Layouts
-import MainLayout from './components/layout/MainLayout';
+import MainLayout from './components/layout/MainLayout.jsx';
 import DashboardLayout from './components/layout/DashboardLayout';
 
 // Pages & Features
