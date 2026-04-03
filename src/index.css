@@ -1,0 +1,47 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Playfair+Display:wght@700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-obsidian text-white antialiased;
+  }
+
+  /* Custom gold scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-obsidian;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-gold/20 rounded-full transition-colors;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-gold/40;
+  }
+
+  /* Premium text selection */
+  ::selection {
+    @apply bg-gold/30 text-white;
+  }
+}
+
+/* AI Scan Animation - Utilities layer ውስጥ መሆኑ ይመረጣል */
+@layer utilities {
+  @keyframes scan {
+    0% { transform: translateY(-100%); }
+    100% { transform: translateY(300%); }
+  }
+
+  .animate-scan {
+    animation: scan 2s linear infinite;
+  }
+
+  /* ለተጨማሪ ውበት፡ Glassmorphism effect */
+  .glass {
+    @apply bg-white/5 backdrop-blur-lg border border-white/10;
+  }
+}
