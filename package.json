@@ -4,6 +4,7 @@
     "recharts": "^3.8.1"
   },
   "devDependencies": {
-    "supabase": "^2.84.10"
+    "supabase": "^2.84.10",
+    "vite": "^8.0.3"
   }
 }
