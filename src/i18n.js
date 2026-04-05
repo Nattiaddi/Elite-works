@@ -37,7 +37,7 @@ i18n
           "welcome_message": "ወደ የእርስዎ ኢሊት ዳሽቦርድ እንኳን መጡ።",
           "quick_actions": "ፈጣን ተግባራት",
           "find_job": "ስራ ፈልግ",
-          "post_job": "ስራ ልጠፍ",
+          "post_job": "ስራ ለጠፍ",
           "edit_profile": "ፕሮፋይል አስተካክል"
         }
       }
