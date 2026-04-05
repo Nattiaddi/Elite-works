@@ -5,10 +5,14 @@ import { Toaster } from 'react-hot-toast';
 
 // Layouts
 import MainLayout from './components/layout/MainLayout.jsx';
-import DashboardLayout from './components/layout/DashboardLayout';
+import DashboardLayout from './components/layout/DashboardLayout.jsx';
 
-// Pages & Features
-import LandingPage from './pages/LandingPage';
+// Pages
+import LandingPage from './pages/LandingPage.jsx';
+import AboutUs from './pages/AboutUs.jsx';
+import Connect from './pages/Connect.jsx';
+
+// Features (እነዚህ ፋይሎች በቦታቸው መኖራቸውን አረጋግጥ)
 import AuthPage from './features/auth/components/AuthPage';
 import JobFeed from './features/jobs/components/JobFeed';
 import PostJob from './features/jobs/components/PostJob';
@@ -17,8 +21,6 @@ import PublicProfile from './features/profiles/components/PublicProfile';
 import AdminDashboard from './features/admin/components/AdminDashboard';
 import ProfileSettings from './features/profiles/components/ProfileSettings';
 import NotificationHistory from './features/notifications/components/NotificationHistory';
-import AboutUs from './pages/AboutUs';
-import Connect from './pages/Connect';
 
 function App() {
   const [session, setSession] = useState(null);
@@ -26,12 +28,14 @@ function App() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // 1. Initial Session Check
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       if (session) fetchUserRole(session.user.id);
       else setLoading(false);
     });
 
+    // 2. Auth State Change Listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       if (session) fetchUserRole(session.user.id);
@@ -42,44 +46,35 @@ function App() {
   }, []);
 
   const fetchUserRole = async (userId) => {
-    const { data } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', userId)
-      .single();
-    
-    if (data) setUserRole(data.role);
-    setLoading(false);
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', userId)
+        .single();
+      
+      if (data) setUserRole(data.role);
+    } catch (err) {
+      console.error("Error fetching role:", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  if (loading) return (
-    <div className="h-screen bg-[#0a0a0a] flex items-center justify-center text-[#d4af37] font-bold tracking-widest uppercase">
-      Elite Works Loading...
-    </div>
-  );
+  // Loading Screen
+  if (loading) {
+    return (
+      <div className="h-screen bg-[#0a0a0a] flex items-center justify-center text-[#d4af37] font-bold tracking-widest uppercase italic">
+        Elite Works Loading...
+      </div>
+    );
+  }
 
   return (
     <BrowserRouter>
-      <Toaster
-        position="top-right"
-        toastOptions={{
-          style: {
-            background: '#111',
-            color: '#d4af37',
-            border: '1px solid #d4af37',
-            padding: '16px',
-            borderRadius: '8px',
-            fontSize: '14px',
-          },
-          success: {
-            duration: 4000,
-            iconTheme: { primary: '#d4af37', secondary: '#111' },
-          },
-        }}
-      />
-
+      <Toaster position="top-right" />
       <Routes>
-        {/* --- 1. Public Routes --- */}
+        {/* --- Public Routes --- */}
         <Route element={<MainLayout />}>
           <Route path="/" element={<LandingPage />} />
           <Route path="/about" element={<AboutUs />} />
@@ -88,13 +83,13 @@ function App() {
           <Route path="/profile/:id" element={<PublicProfile />} />
         </Route>
 
-        {/* --- 2. Admin Route --- */}
+        {/* --- Admin Route --- */}
         <Route 
           path="/admin" 
           element={session && userRole === 'admin' ? <AdminDashboard /> : <Navigate to="/dashboard" />} 
         />
 
-        {/* --- 3. Protected Dashboard Routes --- */}
+        {/* --- Protected Dashboard Routes --- */}
         <Route 
           path="/dashboard" 
           element={session ? <DashboardLayout userRole={userRole} /> : <Navigate to="/login" />}
@@ -106,6 +101,7 @@ function App() {
           <Route path="notifications" element={<NotificationHistory />} />
         </Route>
 
+        {/* Catch-all */}
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </BrowserRouter>

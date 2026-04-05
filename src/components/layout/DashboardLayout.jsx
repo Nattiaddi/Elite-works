@@ -1,72 +1,51 @@
-import { useEffect } from 'react';
-import { Outlet } from 'react-router-dom';
+import React from 'react';
+import { Outlet, Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../../config/supabase';
-import toast from 'react-hot-toast';
 
 const DashboardLayout = ({ userRole }) => {
-  useEffect(() => {
-    const setupRealtime = async () => {
-      // 1. የተጠቃሚውን መረጃ ማግኘት
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
-        console.log("ተጠቃሚ አልተገኘም - Login መደረጉን ያረጋግጡ");
-        return;
-      }
+  const navigate = useNavigate();
 
-      // 2. ID-ህን በConsole ላይ ያወጣዋል (ይህንን ኮፒ አድርገህ ለSQL ሙከራ ተጠቀመው)
-      console.log("የእኔ User ID:", user.id);
-
-      // 3. Realtime ግንኙነት መፍጠር
-      const channel = supabase
-        .channel('db-notifications')
-        .on(
-          'postgres_changes',
-          {
-            event: 'INSERT',
-            schema: 'public',
-            table: 'notifications',
-            filter: `user_id=eq.${user.id}`,
-          },
-          (payload) => {
-            // አዲስ ኖቲፊኬሽን ሲመጣ የሚታይ Toast
-            toast.success(payload.new.message || 'አዲስ መልዕክት አለዎት', {
-              icon: '🔔',
-              duration: 6000,
-              style: {
-                background: '#111',
-                color: '#d4af37',
-                border: '1px solid #d4af37',
-              }
-            });
-          }
-        )
-        .subscribe();
-
-      return () => {
-        supabase.removeChannel(channel);
-      };
-    };
-
-    setupRealtime();
-  }, []);
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate('/login');
+  };
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white">
-      {/* Navigation Bar */}
-      <nav className="p-4 border-b border-[#d4af37]/20 flex justify-between items-center">
-        <h1 className="text-[#d4af37] font-bold text-xl tracking-wider">ELITE WORKS</h1>
-        <div className="flex items-center gap-3">
-          <span className="text-[10px] uppercase border border-[#d4af37]/40 text-[#d4af37] px-2 py-1 rounded">
-            {userRole}
-          </span>
+    <div className="flex min-h-screen bg-gray-100">
+      {/* Sidebar */}
+      <aside className="w-64 bg-gray-900 text-white hidden md:block">
+        <div className="p-6">
+          <h2 className="text-2xl font-bold text-yellow-500">Elite Dashboard</h2>
+          <p className="text-xs text-gray-400 mt-1 uppercase tracking-widest">{userRole} Mode</p>
         </div>
-      </nav>
+        <nav className="mt-6 px-4 space-y-2">
+          <Link to="/dashboard" className="block py-2.5 px-4 rounded hover:bg-gray-800 transition">Job Feed</Link>
+          <Link to="/dashboard/post-job" className="block py-2.5 px-4 rounded hover:bg-gray-800 transition">Post a Job</Link>
+          <Link to="/dashboard/notifications" className="block py-2.5 px-4 rounded hover:bg-gray-800 transition">Notifications</Link>
+          <Link to="/dashboard/settings" className="block py-2.5 px-4 rounded hover:bg-gray-800 transition">Settings</Link>
+          <button 
+            onClick={handleLogout}
+            className="w-full text-left block py-2.5 px-4 rounded text-red-400 hover:bg-red-900/20 transition mt-10"
+          >
+            Logout
+          </button>
+        </nav>
+      </aside>
 
-      {/* Main Content */}
-      <main className="p-6">
-        <Outlet />
-      </main>
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col">
+        <header className="bg-white shadow-sm h-16 flex items-center justify-end px-8">
+          <div className="flex items-center space-x-4">
+            <span className="text-sm font-medium text-gray-600">Welcome, {userRole}</span>
+            <div className="h-8 w-8 rounded-full bg-yellow-500"></div>
+          </div>
+        </header>
+
+        <main className="p-8">
+          {/* ወሳኝ መስመር፡ የልጅ ገጾች (Routes) እዚህ ውስጥ ነው የሚታዩት */}
+          <Outlet /> 
+        </main>
+      </div>
     </div>
   );
 };
