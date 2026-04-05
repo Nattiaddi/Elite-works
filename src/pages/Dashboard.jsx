@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
-import { useNavigate, Link } from 'react-router-dom'; // Link እዚህ ጋር ተጨምሯል
+import { useNavigate, Link } from 'react-router-dom';
 
 const Dashboard = () => {
   const [user, setUser] = useState(null);
@@ -24,7 +24,7 @@ const Dashboard = () => {
   };
 
   if (!user) return (
-    <div className="min-h-screen bg-slate-950 text-gold-500 flex items-center justify-center">
+    <div className="min-h-screen bg-slate-950 text-gold-500 flex items-center justify-center font-bold">
       በመጫን ላይ...
     </div>
   );
@@ -32,7 +32,7 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-slate-950 text-white p-6">
       {/* Top Navigation */}
-      <nav className="flex justify-between items-center mb-10 border-b border-gold-500/10 pb-4">
+      <nav className="flex justify-between items-center mb-10 border-b border-gold-500/10 pb-4 max-w-6xl mx-auto">
         <h1 className="text-2xl font-bold text-gold-500 underline decoration-gold-500/30 underline-offset-8">
           Elite Dashboard
         </h1>
@@ -64,20 +64,31 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Quick Actions */}
+        {/* Quick Actions - Upwork Style */}
         <div className="bg-slate-900 border border-gold-500/20 p-8 rounded-3xl h-fit">
           <h3 className="text-xl font-bold mb-6 text-gold-400">ፈጣን ምርጫዎች</h3>
           <div className="space-y-4">
+            {/* ለፍሪላንሰሮች */}
             <Link 
               to="/find-jobs" 
               className="w-full block text-center bg-gold-600 text-slate-950 font-bold py-3 rounded-xl hover:bg-gold-400 transition-colors shadow-lg shadow-gold-600/10"
             >
-              አዲስ ስራ ፈልግ
+              ሥራ ፈልግ
+            </Link>
+
+            {/* ለደንበኞች */}
+            <Link 
+              to="/post-job" 
+              className="w-full block text-center border-2 border-gold-600 text-gold-500 font-bold py-3 rounded-xl hover:bg-gold-600 hover:text-slate-950 transition-all"
+            >
+              ሥራ ልጠፍ (Post a Job)
             </Link>
             
+            <hr className="border-slate-800 my-4" />
+
             <Link 
               to="/profile" 
-              className="w-full block text-center border border-gold-500/30 text-gold-200 py-3 rounded-xl hover:bg-gold-500/10 transition-colors font-medium"
+              className="w-full block text-center border border-slate-700 text-slate-300 py-3 rounded-xl hover:border-gold-500/50 hover:text-gold-200 transition-colors font-medium"
             >
               ፕሮፋይል አስተካክል
             </Link>
