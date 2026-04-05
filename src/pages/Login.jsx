@@ -19,7 +19,7 @@ const Login = () => {
       alert("መግባት አልተቻለም፦ " + error.message);
     } else {
       alert("እንኳን ደህና መጡ!");
-      navigate('/'); 
+      navigate('/dashboard'); 
     }
   };
 
