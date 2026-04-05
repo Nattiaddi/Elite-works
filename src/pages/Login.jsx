@@ -1,14 +1,26 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { supabase } from '../lib/supabaseClient';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const navigate = useNavigate();
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    console.log("Logging in with:", email, password);
-    // እዚህ ጋር የ Supabase Login ኮድ ይገባል
+    
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (error) {
+      alert("መግባት አልተቻለም፦ " + error.message);
+    } else {
+      alert("እንኳን ደህና መጡ!");
+      navigate('/'); 
+    }
   };
 
   return (
@@ -21,7 +33,7 @@ const Login = () => {
 
         <form onSubmit={handleLogin} className="space-y-6">
           <div>
-            <label className="block text-gold-200 mb-2 text-sm">ኢሜይል (Email)</label>
+            <label className="block text-gold-200 mb-2 text-sm">ኢሜይል</label>
             <input 
               type="email" 
               className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-gold-500 transition-colors"
@@ -33,7 +45,7 @@ const Login = () => {
           </div>
 
           <div>
-            <label className="block text-gold-200 mb-2 text-sm">የይለፍ ቃል (Password)</label>
+            <label className="block text-gold-200 mb-2 text-sm">የይለፍ ቃል</label>
             <input 
               type="password" 
               className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-gold-500 transition-colors"
@@ -44,13 +56,13 @@ const Login = () => {
             />
           </div>
 
-          <button className="w-full bg-gradient-to-r from-gold-600 to-gold-400 text-slate-950 font-bold py-3 rounded-lg hover:opacity-90 transition-opacity shadow-lg shadow-gold-500/20">
+          <button type="submit" className="w-full bg-gradient-to-r from-gold-600 to-gold-400 text-slate-950 font-bold py-3 rounded-lg hover:opacity-90 transition-opacity shadow-lg shadow-gold-500/20">
             ይግቡ
           </button>
         </form>
 
         <p className="text-center text-slate-500 mt-8 text-sm">
-          አካውንት የለዎትም? <Link to="/signup" className="text-gold-500 hover:underline">ተመዝገቡ</Link>
+          አካውንት የለዎትም? <Link to="/signup" className="text-gold-500 hover:underline font-medium">ተመዝገቡ</Link>
         </p>
       </div>
     </div>
