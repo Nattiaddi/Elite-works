@@ -9,35 +9,43 @@ i18n
     resources: {
       en: {
         translation: {
-          "loading": "Loading",
+          "welcome": "Welcome to",
+          "welcome_suffix": "Elite Works",
+          "hero_subtitle": "We provide quality work with care and efficiency just for you.",
+          "get_started": "Get Started Now",
+          "login": "Login",
+          "signup": "Sign Up",
+          "logout": "Logout",
           "greeting": "Hello",
-          "welcome_message": "Welcome to Elite Works dashboard. What would you like to do today?",
-          "balance": "Your Balance",
-          "completed_jobs": "Completed Jobs",
+          "welcome_message": "Welcome to your elite dashboard.",
           "quick_actions": "Quick Actions",
           "find_job": "Find Jobs",
           "post_job": "Post a Job",
-          "edit_profile": "Edit Profile",
-          "logout": "Logout"
+          "edit_profile": "Edit Profile"
         }
       },
       am: {
         translation: {
-          "loading": "በመጫን ላይ",
+          "welcome": "እንኳን ወደ",
+          "welcome_suffix": "ኢሊት ወርክስ በሰላም መጡ",
+          "hero_subtitle": "ለእርስዎ ጥራት ያላቸውን ስራዎች በጥንቃቄ እና በቅልጥፍና እናቀርባለን።",
+          "get_started": "አሁኑኑ ይጀምሩ",
+          "login": "ይግቡ",
+          "signup": "ይመዝገቡ",
+          "logout": "ውጣ",
           "greeting": "ሰላም",
-          "welcome_message": "ወደ Elite Works ዳሽቦርድ እንኳን በደህና መጡ። ዛሬ ምን መስራት ይፈልጋሉ?",
-          "balance": "ያለዎት ብር",
-          "completed_jobs": "ያለቁ ስራዎች",
-          "quick_actions": "ፈጣን ምርጫዎች",
-          "find_job": "ሥራ ፈልግ",
-          "post_job": "ሥራ ልጠፍ",
-          "edit_profile": "ፕሮፋይል አስተካክል",
-          "logout": "ውጣ"
+          "welcome_message": "ወደ የእርስዎ ኢሊት ዳሽቦርድ እንኳን መጡ።",
+          "quick_actions": "ፈጣን ተግባራት",
+          "find_job": "ስራ ፈልግ",
+          "post_job": "ስራ ልጠፍ",
+          "edit_profile": "ፕሮፋይል አስተካክል"
         }
       }
     },
     fallbackLng: 'en',
-    interpolation: { escapeValue: false }
+    interpolation: {
+      escapeValue: false
+    }
   });
 
 export default i18n;
