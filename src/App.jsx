@@ -5,7 +5,7 @@ import { Toaster } from 'react-hot-toast';
 
 // Layouts
 import MainLayout from './components/layout/MainLayout';
-import DashboardLayout from './components/layout/DashboardLayout';
+import DashboardLayout from './components/layout/DashboardLayout.jsx';
 
 // Pages (እነዚህ ፋይሎች በ src/pages ውስጥ መኖራቸውን አረጋግጥ)
 import LandingPage from './pages/LandingPage';
