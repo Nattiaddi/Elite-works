@@ -9,27 +9,35 @@ i18n
     resources: {
       en: {
         translation: {
-          "welcome": "Welcome to Elite Works",
+          "loading": "Loading",
+          "greeting": "Hello",
+          "welcome_message": "Welcome to Elite Works dashboard. What would you like to do today?",
+          "balance": "Your Balance",
+          "completed_jobs": "Completed Jobs",
+          "quick_actions": "Quick Actions",
           "find_job": "Find Jobs",
           "post_job": "Post a Job",
-          "profile": "Edit Profile",
+          "edit_profile": "Edit Profile",
           "logout": "Logout"
         }
       },
       am: {
         translation: {
-          "welcome": "ወደ ኢሊት ወርክስ እንኳን በደህና መጡ",
+          "loading": "በመጫን ላይ",
+          "greeting": "ሰላም",
+          "welcome_message": "ወደ Elite Works ዳሽቦርድ እንኳን በደህና መጡ። ዛሬ ምን መስራት ይፈልጋሉ?",
+          "balance": "ያለዎት ብር",
+          "completed_jobs": "ያለቁ ስራዎች",
+          "quick_actions": "ፈጣን ምርጫዎች",
           "find_job": "ሥራ ፈልግ",
           "post_job": "ሥራ ልጠፍ",
-          "profile": "ፕሮፋይል አስተካክል",
+          "edit_profile": "ፕሮፋይል አስተካክል",
           "logout": "ውጣ"
         }
       }
     },
     fallbackLng: 'en',
-    interpolation: {
-      escapeValue: false
-    }
+    interpolation: { escapeValue: false }
   });
 
 export default i18n;
