@@ -9,3 +9,5 @@ const MainLayout = () => (
     </main>
   </div>
 );
+
+export default MainLayout;
