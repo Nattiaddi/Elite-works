@@ -8,7 +8,6 @@ const Navbar = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // የተጠቃሚውን ሁኔታ መከታተል
     const getUserData = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       setUser(user);
@@ -25,7 +24,6 @@ const Navbar = () => {
 
     getUserData();
 
-    // በድንገት Login/Logout ቢደረግ ቼክ ለማድረግ
     const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
       setUser(session?.user || null);
       if (!session) setRole(null);
@@ -50,10 +48,14 @@ const Navbar = () => {
 
         {/* Links */}
         <div className="hidden md:flex items-center gap-8">
+          {/* ለሁሉም ሰው የሚታዩ ገጾች */}
+          <Link to="/about" className="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-gold-500 transition-colors italic">About</Link>
+
           {user ? (
             <>
               <Link to="/dashboard" className="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-gold-500 transition-colors italic">Dashboard</Link>
               
+              {/* በቀጣሪ እና በፍሪላንሰር መካከል የሚቀያየር ሜኑ */}
               {role === 'client' ? (
                 <>
                   <Link to="/post-job" className="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-gold-500 transition-colors italic">Post Job</Link>
@@ -66,6 +68,7 @@ const Navbar = () => {
                 </>
               )}
               
+              {/* Profile Icon */}
               <Link to="/profile" className="w-10 h-10 bg-gold-500/10 border border-gold-500/20 rounded-xl flex items-center justify-center text-gold-500 font-black italic text-sm hover:bg-gold-500 hover:text-slate-950 transition-all">
                 {user.email?.charAt(0).toUpperCase()}
               </Link>
@@ -80,15 +83,15 @@ const Navbar = () => {
           ) : (
             <>
               <Link to="/login" className="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-gold-500 transition-colors">Login</Link>
-              <Link to="/signup" className="bg-gold-500 text-slate-950 px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-white transition-all">
+              <Link to="/signup" className="bg-gold-500 text-slate-950 px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-white transition-all shadow-lg shadow-gold-500/20">
                 Join Elite
               </Link>
             </>
           )}
         </div>
 
-        {/* Mobile Menu Icon (Placeholder) */}
-        <div className="md:hidden text-gold-500 font-black italic">MENU</div>
+        {/* Mobile Menu (Placeholder) */}
+        <div className="md:hidden text-gold-500 font-black italic cursor-pointer">MENU</div>
       </div>
     </nav>
   );
