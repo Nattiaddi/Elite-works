@@ -64,6 +64,7 @@ i18n
         }
       }
     },
+    lng: 'en', // Default language is English
     fallbackLng: 'en',
     interpolation: {
       escapeValue: false
