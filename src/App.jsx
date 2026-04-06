@@ -13,6 +13,7 @@ import Contact from './pages/Contact'; // 👈 እዚህ ጋር ሴሚኮለን 
 import FindJobs from './pages/FindJobs';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
+import MyPostings from './pages/MyPostings';
 
 function App() {
   return (
@@ -31,6 +32,7 @@ function App() {
           <Route path="/post-job" element={<PostJob />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/my-postings" element={<MyPostings />} />
         </Routes>
       </div>
     </Router>
