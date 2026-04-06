@@ -20,6 +20,12 @@ const PostJob = () => {
 
     const { data: { user } } = await supabase.auth.getUser();
 
+    if (!user) {
+      alert("Please login to post a job");
+      navigate('/login');
+      return;
+    }
+
     const { error } = await supabase.from('jobs').insert([
       {
         title,
@@ -104,4 +110,43 @@ const PostJob = () => {
               <input 
                 type="number" 
                 placeholder="e.g. 10000"
-                className="w-full bg-slate-950 border border-slate-800 text-white
+                className="w-full bg-slate-950 border border-slate-800 text-white px-6 py-4 rounded-2xl focus:outline-none focus:border-gold-500/50 transition-all font-bold"
+                value={budget}
+                onChange={(e) => setBudget(e.target.value)}
+                required
+              />
+            </div>
+          </div>
+
+          {/* Experience Level */}
+          <div>
+            <label className="block text-slate-500 text-[10px] uppercase font-black tracking-[0.2em] mb-3 ml-1">Experience Level Required</label>
+            <div className="flex gap-4">
+              {['Entry', 'Intermediate', 'Expert'].map((lvl) => (
+                <button
+                  key={lvl}
+                  type="button"
+                  onClick={() => setExperience(lvl)}
+                  className={`flex-1 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest border transition-all ${experience === lvl ? 'bg-gold-500 border-gold-500 text-slate-950 shadow-lg shadow-gold-500/20' : 'bg-slate-950 border-slate-800 text-slate-500 hover:border-gold-500/30'}`}
+                >
+                  {lvl}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Submit Button */}
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-gradient-to-r from-gold-600 to-gold-400 text-slate-950 font-black py-5 rounded-2xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-2xl shadow-gold-500/20 disabled:opacity-50 mt-4 uppercase tracking-[0.2em]"
+          >
+            {loading ? 'Posting...' : 'Launch Project'}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+export default PostJob;
