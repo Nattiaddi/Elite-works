@@ -11,6 +11,8 @@ import PostJob from './pages/PostJob';
 import About from './pages/About';
 import Contact from './pages/Contact'; // 👈 እዚህ ጋር ሴሚኮለን ተስተካክሏል
 import FindJobs from './pages/FindJobs';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 
 function App() {
   return (
@@ -27,6 +29,8 @@ function App() {
           <Route path="/post-job" element={<PostJob />} />
           <Route path="/find-jobs" element={<FindJobs />} />
           <Route path="/post-job" element={<PostJob />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
         </Routes>
       </div>
     </Router>
