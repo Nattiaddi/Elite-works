@@ -1,83 +1,107 @@
 import React, { useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 const PostJob = () => {
-  const [jobData, setJobData] = useState({ title: '', description: '', budget: '', category: '' });
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [budget, setBudget] = useState('');
+  const [category, setCategory] = useState('Web Development');
+  const [experience, setExperience] = useState('Intermediate');
+  const [loading, setLoading] = useState(false);
+  
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
-  const handlePost = async (e) => {
+  const handlePostJob = async (e) => {
     e.preventDefault();
+    setLoading(true);
+
     const { data: { user } } = await supabase.auth.getUser();
 
     const { error } = await supabase.from('jobs').insert([
-      { ...jobData, client_id: user.id }
+      {
+        title,
+        description,
+        budget: parseInt(budget),
+        category,
+        experience_level: experience,
+        client_id: user.id,
+        client_name: user.user_metadata?.full_name || 'Elite Client'
+      }
     ]);
 
-    if (error) alert(error.message);
-    else {
-      alert("ሥራው በትክክል ተለጥፏል!");
-      navigate('/dashboard');
+    if (error) {
+      alert("ስህተት ተፈጥሯል: " + error.message);
+    } else {
+      alert("ሥራው በሥርዓት ተለጥፏል! 🚀");
+      navigate('/find-jobs');
     }
+    setLoading(false);
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white p-8">
-      <div className="max-w-3xl mx-auto bg-slate-900 border border-gold-500/20 p-10 rounded-3xl shadow-2xl">
-        <h2 className="text-3xl font-bold text-gold-500 mb-8">አዲስ ሥራ ይለጥፉ</h2>
-        
-        <form onSubmit={handlePost} className="space-y-6">
+    <div className="min-h-screen bg-slate-950 text-white p-6 md:p-12 relative overflow-hidden">
+      {/* Background Glow */}
+      <div className="absolute top-0 right-0 w-96 h-96 bg-gold-500/5 blur-[120px] rounded-full -z-10"></div>
+      
+      <div className="max-w-3xl mx-auto">
+        <div className="mb-12">
+          <h1 className="text-4xl font-black italic tracking-tighter text-white">
+            Post an <span className="text-gold-500">Elite Opportunity</span>
+          </h1>
+          <p className="text-slate-500 font-medium mt-2">Find the best talent for your prestigious projects.</p>
+        </div>
+
+        <form onSubmit={handlePostJob} className="bg-slate-900/40 border border-slate-800 p-10 rounded-[3rem] backdrop-blur-2xl space-y-8">
+          
+          {/* Job Title */}
           <div>
-            <label className="block text-gold-200 mb-2 font-medium">የሥራው ርዕስ (Job Title)</label>
+            <label className="block text-slate-500 text-[10px] uppercase font-black tracking-[0.2em] mb-3 ml-1">Job Title</label>
             <input 
               type="text" 
-              className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-4 focus:border-gold-500 outline-none transition-all"
-              placeholder="ለምሳሌ፦ የድርጅት ሎጎ ዲዛይን"
-              onChange={(e) => setJobData({...jobData, title: e.target.value})}
+              placeholder="e.g. Senior React Developer for Luxury Branding Site"
+              className="w-full bg-slate-950 border border-slate-800 text-white px-6 py-4 rounded-2xl focus:outline-none focus:border-gold-500/50 transition-all font-medium"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
               required
             />
           </div>
 
+          {/* Description */}
           <div>
-            <label className="block text-gold-200 mb-2 font-medium">ዝርዝር መግለጫ (Description)</label>
+            <label className="block text-slate-500 text-[10px] uppercase font-black tracking-[0.2em] mb-3 ml-1">Job Description</label>
             <textarea 
-              className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-4 focus:border-gold-500 outline-none h-40"
-              placeholder="ስለ ሥራው በዝርዝር ይግለጹ..."
-              onChange={(e) => setJobData({...jobData, description: e.target.value})}
+              rows="5"
+              placeholder="Describe the project requirements and expectations..."
+              className="w-full bg-slate-950 border border-slate-800 text-white px-6 py-4 rounded-2xl focus:outline-none focus:border-gold-500/50 transition-all font-medium"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
               required
             />
           </div>
 
-          <div className="grid md:grid-cols-2 gap-6">
+          <div className="grid md:grid-cols-2 gap-8">
+            {/* Category */}
             <div>
-              <label className="block text-gold-200 mb-2 font-medium">ክፍያ (Budget)</label>
-              <input 
-                type="text" 
-                className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-4 focus:border-gold-500 outline-none"
-                placeholder="ለምሳሌ፦ 2000 ETB"
-                onChange={(e) => setJobData({...jobData, budget: e.target.value})}
-              />
-            </div>
-            <div>
-              <label className="block text-gold-200 mb-2 font-medium">ዘርፍ (Category)</label>
+              <label className="block text-slate-500 text-[10px] uppercase font-black tracking-[0.2em] mb-3 ml-1">Category</label>
               <select 
-                className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-4 focus:border-gold-500 outline-none"
-                onChange={(e) => setJobData({...jobData, category: e.target.value})}
+                className="w-full bg-slate-950 border border-slate-800 text-white px-6 py-4 rounded-2xl focus:outline-none focus:border-gold-500/50 transition-all font-bold appearance-none"
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
               >
-                <option value="Graphics">ግራፊክስ ዲዛይን</option>
-                <option value="Web">ዌብ ሳይት ልማት</option>
-                <option value="Writing">ጽሁፍ እና ትርጉም</option>
+                <option>Web Development</option>
+                <option>Graphic Design</option>
+                <option>Digital Marketing</option>
+                <option>Video Editing</option>
               </select>
             </div>
-          </div>
 
-          <button className="w-full bg-gradient-to-r from-gold-600 to-gold-400 text-slate-950 font-bold py-4 rounded-xl hover:scale-[1.01] transition-transform text-lg shadow-lg shadow-gold-600/10">
-            ሥራውን አሁኑኑ ልጥፍ
-          </button>
-        </form>
-      </div>
-    </div>
-  );
-};
-
-export default PostJob;
+            {/* Budget */}
+            <div>
+              <label className="block text-slate-500 text-[10px] uppercase font-black tracking-[0.2em] mb-3 ml-1">Budget (ETB)</label>
+              <input 
+                type="number" 
+                placeholder="e.g. 10000"
+                className="w-full bg-slate-950 border border-slate-800 text-white
