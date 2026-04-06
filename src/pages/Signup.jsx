@@ -7,6 +7,7 @@ const Signup = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
+  const [userRole, setUserRole] = useState('freelancer'); // Default role
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   
@@ -24,6 +25,7 @@ const Signup = () => {
       options: {
         data: {
           full_name: fullName,
+          user_role: userRole, // ሚናውን ወደ Supabase Metadata እንልካለን
         },
       },
     });
@@ -39,7 +41,6 @@ const Signup = () => {
 
   return (
     <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6 selection:bg-gold-500/30 relative overflow-hidden">
-      {/* Background Glows */}
       <div className="absolute top-[-20%] right-[-10%] w-[50%] h-[50%] bg-gold-500/5 blur-[120px] rounded-full"></div>
       <div className="absolute bottom-[-20%] left-[-10%] w-[50%] h-[50%] bg-gold-500/5 blur-[120px] rounded-full"></div>
 
@@ -60,6 +61,26 @@ const Signup = () => {
                 {error}
               </div>
             )}
+
+            {/* Role Selection */}
+            <div className="grid grid-cols-2 gap-4 mb-6">
+              <button
+                type="button"
+                onClick={() => setUserRole('freelancer')}
+                className={`p-4 rounded-2xl border transition-all text-center ${userRole === 'freelancer' ? 'border-gold-500 bg-gold-500/10 text-gold-500' : 'border-slate-800 bg-slate-950 text-slate-500'}`}
+              >
+                <div className="text-[10px] font-black uppercase tracking-widest mb-1 italic">I am a</div>
+                <div className="font-bold">Freelancer</div>
+              </button>
+              <button
+                type="button"
+                onClick={() => setUserRole('client')}
+                className={`p-4 rounded-2xl border transition-all text-center ${userRole === 'client' ? 'border-gold-500 bg-gold-500/10 text-gold-500' : 'border-slate-800 bg-slate-950 text-slate-500'}`}
+              >
+                <div className="text-[10px] font-black uppercase tracking-widest mb-1 italic">I am a</div>
+                <div className="font-bold">Client</div>
+              </button>
+            </div>
 
             <div>
               <label className="block text-slate-500 text-[10px] uppercase font-black tracking-[0.2em] mb-2 ml-1">Full Name</label>
@@ -100,9 +121,9 @@ const Signup = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-gold-600 to-gold-400 text-slate-950 font-black py-4 rounded-2xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-gold-500/10 disabled:opacity-50 mt-4"
+              className="w-full bg-gradient-to-r from-gold-600 to-gold-400 text-slate-950 font-black py-4 rounded-2xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-gold-500/10 disabled:opacity-50 mt-4 uppercase tracking-widest text-xs"
             >
-              {loading ? t('loading') : (t('signup') || 'ይመዝገቡ')}
+              {loading ? t('loading') : `Join as a ${userRole}`}
             </button>
           </form>
 
@@ -114,12 +135,6 @@ const Signup = () => {
               </Link>
             </p>
           </div>
-        </div>
-
-        <div className="mt-8 text-center">
-          <Link to="/" className="text-slate-600 text-xs font-bold uppercase tracking-widest hover:text-gold-500 transition-colors">
-            ← {t('back_to_home') || 'ወደ መነሻ ተመለስ'}
-          </Link>
         </div>
       </div>
     </div>
