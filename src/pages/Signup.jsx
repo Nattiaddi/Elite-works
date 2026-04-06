@@ -18,7 +18,6 @@ const Signup = () => {
     setLoading(true);
     setError(null);
 
-    // ተጠቃሚውን መመዝገብ እና Metadata (ሙሉ ስም) መጨመር
     const { error } = await supabase.auth.signUp({
       email,
       password,
@@ -32,7 +31,6 @@ const Signup = () => {
     if (error) {
       setError(error.message);
     } else {
-      // ኢሜይል እንዲያረጋግጡ መልዕክት ማሳየት ወይም በቀጥታ ወደ ዳሽቦርድ መላክ ይቻላል
       alert("ምዝገባው ተሳክቷል! እባክዎ ኢሜይልዎን ያረጋግጡ።");
       navigate('/login');
     }
@@ -46,7 +44,6 @@ const Signup = () => {
       <div className="absolute bottom-[-20%] left-[-10%] w-[50%] h-[50%] bg-gold-500/5 blur-[120px] rounded-full"></div>
 
       <div className="w-full max-w-md relative z-10">
-        {/* Logo Section */}
         <div className="text-center mb-8">
           <Link to="/" className="text-3xl font-black text-gold-500 italic tracking-tighter">
             Elite Works
@@ -56,7 +53,6 @@ const Signup = () => {
           </p>
         </div>
 
-        {/* Signup Card */}
         <div className="bg-slate-900/40 border border-slate-800 p-8 rounded-[2.5rem] backdrop-blur-2xl shadow-2xl">
           <form onSubmit={handleSignup} className="space-y-5">
             {error && (
@@ -66,6 +62,68 @@ const Signup = () => {
             )}
 
             <div>
-              <label className="block text-slate-500 text-[10px] uppercase font-black tracking-[0.2em] mb-2 ml-1">
-                Full Name
-              </label>
+              <label className="block text-slate-500 text-[10px] uppercase font-black tracking-[0.2em] mb-2 ml-1">Full Name</label>
+              <input
+                type="text"
+                placeholder="John Doe"
+                className="w-full bg-slate-950 border border-slate-800 text-white px-5 py-4 rounded-2xl focus:outline-none focus:border-gold-500/50 transition-all placeholder:text-slate-800"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-slate-500 text-[10px] uppercase font-black tracking-[0.2em] mb-2 ml-1">Email Address</label>
+              <input
+                type="email"
+                placeholder="example@elite.com"
+                className="w-full bg-slate-950 border border-slate-800 text-white px-5 py-4 rounded-2xl focus:outline-none focus:border-gold-500/50 transition-all placeholder:text-slate-800"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-slate-500 text-[10px] uppercase font-black tracking-[0.2em] mb-2 ml-1">Password</label>
+              <input
+                type="password"
+                placeholder="••••••••"
+                className="w-full bg-slate-950 border border-slate-800 text-white px-5 py-4 rounded-2xl focus:outline-none focus:border-gold-500/50 transition-all placeholder:text-slate-800"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-gradient-to-r from-gold-600 to-gold-400 text-slate-950 font-black py-4 rounded-2xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-gold-500/10 disabled:opacity-50 mt-4"
+            >
+              {loading ? t('loading') : (t('signup') || 'ይመዝገቡ')}
+            </button>
+          </form>
+
+          <div className="mt-8 text-center">
+            <p className="text-slate-500 text-sm font-medium">
+              {t('already_have_account') || 'አካውንት አለዎት?'} {' '}
+              <Link to="/login" className="text-gold-500 font-bold hover:underline underline-offset-4">
+                {t('login') || 'ይግቡ'}
+              </Link>
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-8 text-center">
+          <Link to="/" className="text-slate-600 text-xs font-bold uppercase tracking-widest hover:text-gold-500 transition-colors">
+            ← {t('back_to_home') || 'ወደ መነሻ ተመለስ'}
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Signup;
