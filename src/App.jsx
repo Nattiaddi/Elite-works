@@ -10,6 +10,7 @@ import Profile from './pages/Profile';
 import PostJob from './pages/PostJob';
 import About from './pages/About';
 import Contact from './pages/Contact'; // 👈 እዚህ ጋር ሴሚኮለን ተስተካክሏል
+import FindJobs from './pages/FindJobs';
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/post-job" element={<PostJob />} />
+          <Route path="/find-jobs" element={<FindJobs />} />
         </Routes>
       </div>
     </Router>

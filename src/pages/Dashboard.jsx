@@ -23,7 +23,7 @@ const Dashboard = () => {
     <div className="min-h-screen bg-slate-950 text-white p-6 md:p-10 selection:bg-gold-500/30">
       {/* Dashboard Nav */}
       <nav className="max-w-7xl mx-auto flex justify-between items-center mb-12 border-b border-white/5 pb-6">
-        <h1 className="text-2xl font-black text-gold-500 italic">Elite Dashboard</h1>
+        <h1 className="text-2xl font-black text-gold-500 italic tracking-tighter">Elite Dashboard</h1>
         <div className="flex items-center gap-6">
           <span className="text-slate-400 text-xs font-bold uppercase tracking-widest hidden md:block">
             {user.user_metadata?.full_name || 'User'}
@@ -62,13 +62,13 @@ const Dashboard = () => {
             <h3 className="text-lg font-black text-gold-500 mb-8 uppercase tracking-widest border-b border-white/5 pb-4">{t('quick_actions')}</h3>
             <div className="space-y-4">
               <Link to="/find-jobs" className="w-full block text-center bg-gold-500 text-slate-950 font-black py-4 rounded-2xl hover:bg-gold-400 transition-all shadow-lg shadow-gold-500/10">
-                {t('find_job')}
+                 {t('find_job')}
               </Link>
-              <Link to="/post-job" className="w-full block text-center border border-gold-500/30 text-gold-500 font-black py-4 rounded-2xl hover:bg-gold-500 hover:text-slate-950 transition-all">
-                {t('post_job')}
+              <Link to="/post-job" className="w-full block text-center border border-gold-600/30 text-gold-500 font-black py-4 rounded-2xl hover:bg-gold-500 hover:text-slate-950 transition-all">
+                 {t('post_job')}
               </Link>
               <Link to="/profile" className="w-full block text-center bg-slate-950 text-slate-400 font-black py-4 rounded-2xl border border-white/5 hover:text-white transition-all">
-                {t('edit_profile')}
+                 {t('edit_profile')}
               </Link>
             </div>
           </div>
