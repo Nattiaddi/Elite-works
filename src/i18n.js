@@ -22,6 +22,18 @@ i18n
           "find_job": "Find Jobs",
           "post_job": "Post a Job",
           "edit_profile": "Edit Profile"
+          "home": "Home",
+          "about_us": "About Us",
+          "contact_us": "Contact Us",
+          "login_subtitle": "Login to your account",
+          "no_account": "Don't have an account?",
+          "back_to_home": "Back to Home",
+          "signup_subtitle": "Create your new account",
+          "already_have_account": "Already have an account?",
+          "balance": "Balance",
+          "completed_jobs": "Completed Jobs",
+          "about": "About",
+          "send_message": "Send Message",
         }
       },
       am: {
@@ -39,6 +51,18 @@ i18n
           "find_job": "ስራ ፈልግ",
           "post_job": "ስራ ለጠፍ",
           "edit_profile": "ፕሮፋይል አስተካክል"
+          "home": "መነሻ",
+          "about_us": "ስለ እኛ",
+          "contact_us": "ያግኙን",
+          "login_subtitle": "ወደ አካውንትዎ ይግቡ",
+          "no_account": "አካውንት የለዎትም?",
+          "back_to_home": "ወደ መነሻ ተመለስ",
+          "signup_subtitle": "አዲስ አካውንት ይፍጠሩ",
+          "already_have_account": "አካውንት አለዎት?",
+          "balance": "ሒሳብ",
+          "completed_jobs": "የተጠናቀቁ ስራዎች",
+          "about": "ስለ",
+          "send_message": "መልዕክት ላክ",
         }
       }
     },
