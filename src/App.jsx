@@ -14,6 +14,7 @@ import FindJobs from './pages/FindJobs';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import MyPostings from './pages/MyPostings';
+import MyApplications from './pages/MyApplications';
 
 function App() {
   return (
@@ -33,6 +34,7 @@ function App() {
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/my-postings" element={<MyPostings />} />
+          <Route path="/my-proposals" element={<MyApplications />} />
         </Routes>
       </div>
     </Router>
