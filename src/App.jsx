@@ -29,7 +29,7 @@ import ForgotPassword from './pages/ForgotPassword';
 import Wallet from './pages/Wallet';
 import Deposit from './pages/Deposit';
 import AdminDashboard from './pages/AdminDashboard';
-import LiveChat from './LiveChat'; // ቻቱን እዚህ ጋር አስገብተነዋል
+import LiveChat from './components/LiveChat';
 
 // Stripe Public Key - እዚህ ጋር የራስህን ቁልፍ አስገባ
 const stripePromise = loadStripe('pk_test_YourActualKeyHere'); 
