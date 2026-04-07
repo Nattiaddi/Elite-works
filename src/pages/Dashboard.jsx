@@ -1,93 +1,107 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
-import { useNavigate, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 const Dashboard = () => {
+  const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
+  const [stats, setStats] = useState({ primary: 0, secondary: 0 });
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
 
   useEffect(() => {
-    const getProfile = async () => {
+    const fetchDashboardData = async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
-        navigate('/login');
-        return;
-      }
+      if (!user) return;
+      setUser(user);
 
-      // ከ Profiles table ሚናውን (Role) ማምጣት
-      const { data, error } = await supabase
+      // Profile መረጃ ማምጣት
+      const { data: profileData } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', user.id)
         .single();
+      setProfile(profileData);
 
-      if (data) setProfile(data);
+      // እንደ Role-ኡ የተለያየ ዳታ መቁጠር
+      if (profileData?.user_role === 'client') {
+        const { count } = await supabase.from('jobs').select('*', { count: 'exact', head: true }).eq('client_id', user.id);
+        setStats({ primary: count || 0, secondary: 0 }); // secondary ለወደፊት Payments ሊሆን ይችላል
+      } else {
+        const { count } = await supabase.from('proposals').select('*', { count: 'exact', head: true }).eq('freelancer_id', user.id);
+        setStats({ primary: count || 0, secondary: 0 });
+      }
       setLoading(false);
     };
 
-    getProfile();
-  }, [navigate]);
+    fetchDashboardData();
+  }, []);
 
-  if (loading) return <div className="min-h-screen bg-slate-950 flex items-center justify-center text-gold-500 font-black italic animate-pulse tracking-widest">LOADING ELITE PANEL...</div>;
+  if (loading) return <div className="p-20 text-gold-500 font-black italic animate-pulse">Loading Elite Dashboard...</div>;
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white p-6 md:p-12 relative overflow-hidden">
-      {/* Background Glow */}
-      <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-gold-500/5 blur-[120px] rounded-full"></div>
+    <div className="max-w-7xl mx-auto px-6 py-10">
+      {/* Welcome Header */}
+      <div className="mb-12">
+        <h1 className="text-4xl font-black italic text-white mb-2 uppercase tracking-tighter">
+          Welcome back, <span className="text-gold-500">{profile?.full_name || user?.email?.split('@')[0]}</span>
+        </h1>
+        <p className="text-slate-500 font-medium italic">Here is what's happening with your projects today.</p>
+      </div>
 
-      <div className="max-w-6xl mx-auto relative z-10">
-        {/* Welcome Banner */}
-        <div className="bg-gradient-to-br from-slate-900 to-slate-950 border border-slate-800 p-10 md:p-16 rounded-[3rem] mb-12 relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-gold-500/10 blur-[80px] rounded-full -mr-32 -mt-32 group-hover:bg-gold-500/20 transition-all"></div>
-          
-          <h1 className="text-4xl md:text-6xl font-black italic tracking-tighter mb-4">
-            Welcome Back, <span className="text-gold-500">{profile?.full_name?.split(' ')[0] || 'Elite'}!</span>
-          </h1>
-          <p className="text-slate-500 font-medium max-w-xl italic">
-            {profile?.user_role === 'client' 
-              ? "Ready to hire the best talent for your next big project?" 
-              : "Explore premium opportunities and grow your freelance career."}
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+        <div className="bg-slate-900/40 border border-slate-800 p-8 rounded-[2rem] backdrop-blur-md">
+          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-2 italic">
+            {profile?.user_role === 'client' ? 'Total Jobs Posted' : 'Total Proposals Sent'}
           </p>
+          <p className="text-5xl font-black text-gold-500 italic leading-none">{stats.primary}</p>
+        </div>
 
-          <div className="mt-10 flex flex-wrap gap-4">
+        <div className="bg-slate-900/40 border border-slate-800 p-8 rounded-[2rem] backdrop-blur-md">
+          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-2 italic">Earnings / Spent</p>
+          <p className="text-5xl font-black text-white italic leading-none">$0</p>
+        </div>
+
+        <div className="bg-gold-500 p-8 rounded-[2rem] shadow-2xl shadow-gold-500/10 flex flex-col justify-between">
+          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-950 mb-4 italic">Account Status</p>
+          <div className="flex justify-between items-end">
+            <span className="text-2xl font-black text-slate-950 italic uppercase tracking-tighter">Elite Plus</span>
+            <Link to="/profile" className="text-[9px] font-black uppercase bg-slate-950 text-white px-3 py-1 rounded-full">Manage</Link>
+          </div>
+        </div>
+      </div>
+
+      {/* Quick Actions & Recent Activity Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Quick Actions */}
+        <div className="bg-slate-900/20 border border-slate-800/50 p-8 rounded-[2.5rem]">
+          <h3 className="text-white font-black italic mb-6 uppercase text-sm tracking-widest">Quick Actions</h3>
+          <div className="grid grid-cols-2 gap-4">
             {profile?.user_role === 'client' ? (
               <>
-                <Link to="/post-job" className="bg-gold-500 text-slate-950 px-10 py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-white transition-all shadow-xl shadow-gold-500/20">
-                  Post a New Job
+                <Link to="/post-job" className="bg-slate-800/40 hover:bg-gold-500 hover:text-slate-950 p-6 rounded-2xl transition-all group">
+                  <p className="font-black italic uppercase text-xs">Post New Job</p>
                 </Link>
-                <Link to="/my-postings" className="bg-slate-800/50 text-white px-10 py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-slate-700 transition-all border border-slate-700">
-                  Manage Jobs
+                <Link to="/my-postings" className="bg-slate-800/40 hover:bg-gold-500 hover:text-slate-950 p-6 rounded-2xl transition-all">
+                  <p className="font-black italic uppercase text-xs">View Applicants</p>
                 </Link>
               </>
             ) : (
               <>
-                <Link to="/find-jobs" className="bg-gold-500 text-slate-950 px-10 py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-white transition-all shadow-xl shadow-gold-500/20">
-                  Browse Opportunities
+                <Link to="/find-jobs" className="bg-slate-800/40 hover:bg-gold-500 hover:text-slate-950 p-6 rounded-2xl transition-all">
+                  <p className="font-black italic uppercase text-xs">Browse Jobs</p>
                 </Link>
-                <Link to="/my-proposals" className="bg-slate-800/50 text-white px-10 py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-slate-700 transition-all border border-slate-700">
-                  My Applications
+                <Link to="/my-proposals" className="bg-slate-800/40 hover:bg-gold-500 hover:text-slate-950 p-6 rounded-2xl transition-all">
+                  <p className="font-black italic uppercase text-xs">Track Bids</p>
                 </Link>
               </>
             )}
           </div>
         </div>
 
-        {/* Stats Section */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-           <div className="bg-slate-900/40 border border-slate-800 p-8 rounded-[2.5rem] backdrop-blur-xl">
-              <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2 italic">Account Type</p>
-              <p className="text-2xl font-black text-gold-500 capitalize">{profile?.user_role}</p>
-           </div>
-           <div className="bg-slate-900/40 border border-slate-800 p-8 rounded-[2.5rem] backdrop-blur-xl">
-              <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2 italic">Status</p>
-              <p className="text-2xl font-black text-white">Verified</p>
-           </div>
-           <div className="bg-slate-900/40 border border-slate-800 p-8 rounded-[2.5rem] backdrop-blur-xl">
-              <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2 italic">Profile Completion</p>
-              <p className="text-2xl font-black text-white">85%</p>
-           </div>
+        {/* Placeholder for Recent Activity */}
+        <div className="bg-slate-900/20 border border-slate-800/50 p-8 rounded-[2.5rem] flex items-center justify-center border-dashed">
+           <p className="text-slate-600 font-bold italic uppercase text-[10px] tracking-widest">No recent notifications</p>
         </div>
       </div>
     </div>
