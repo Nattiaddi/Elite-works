@@ -13,33 +13,43 @@ import About from './pages/About';
 import HelpCenter from './pages/HelpCenter';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
+import Footer from './components/Footer';
 
 function App() {
   return (
     <Router>
+      {/* 1. በሁሉም ገጽ ላይ የሚታየው Navbar */}
       <Navbar />
-      <div className="pt-20 bg-slate-950 min-h-screen">
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/help" element={<HelpCenter />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
-          
-          {/* Gigs & Services */}
-          <Route path="/gigs" element={<Gigs />} />
-          <Route path="/create-gig" element={<CreateGig />} />
 
-          {/* Jobs & Bids */}
-          <Route path="/find-jobs" element={<FindJobs />} />
-          <Route path="/post-job" element={<PostJob />} />
-          
-          {/* User Specific */}
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/my-postings" element={<MyPostings />} />
-          <Route path="/my-proposals" element={<MyApplications />} />
-        </Routes>
+      {/* 2. ዋናው ኮንቴይነር - flex-col እና min-h-screen ፉተሩን ወደ ታች እንዲገፋው ይረዳሉ */}
+      <div className="pt-20 bg-slate-950 min-h-screen flex flex-col">
+        
+        <main className="flex-grow">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/help" element={<HelpCenter />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
+            
+            {/* Gigs & Services */}
+            <Route path="/gigs" element={<Gigs />} />
+            <Route path="/create-gig" element={<CreateGig />} />
+
+            {/* Jobs & Bids */}
+            <Route path="/find-jobs" element={<FindJobs />} />
+            <Route path="/post-job" element={<PostJob />} />
+            
+            {/* User Specific */}
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/my-postings" element={<MyPostings />} />
+            <Route path="/my-proposals" element={<MyApplications />} />
+          </Routes>
+        </main>
+
+        {/* 3. በሁሉም ገጽ ግርጌ የሚታየው Footer */}
+        <Footer />
       </div>
     </Router>
   );

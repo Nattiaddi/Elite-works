@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 
 const Footer = () => {
   return (
-    <footer className="bg-slate-950 border-t border-slate-900 pt-16 pb-8 px-6">
+    <footer className="bg-slate-950 border-t border-slate-900 pt-16 pb-8 px-6 mt-auto">
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
         
         {/* Brand Section */}
@@ -16,10 +16,11 @@ const Footer = () => {
           </p>
         </div>
 
-        {/* Quick Links */}
+        {/* Navigation */}
         <div>
           <h4 className="text-white font-black uppercase tracking-widest text-[10px] mb-6 italic">Navigation</h4>
           <ul className="space-y-4 text-slate-500 text-xs font-bold uppercase tracking-widest italic">
+            <li><Link to="/gigs" className="hover:text-gold-500 transition-colors">Find Services</Link></li>
             <li><Link to="/find-jobs" className="hover:text-gold-500 transition-colors">Find Jobs</Link></li>
             <li><Link to="/post-job" className="hover:text-gold-500 transition-colors">Post a Job</Link></li>
             <li><Link to="/about" className="hover:text-gold-500 transition-colors">About Us</Link></li>
@@ -36,7 +37,7 @@ const Footer = () => {
           </ul>
         </div>
 
-        {/* Contact/Newsletter */}
+        {/* Stay Elite (Newsletter) */}
         <div>
           <h4 className="text-white font-black uppercase tracking-widest text-[10px] mb-6 italic">Stay Elite</h4>
           <div className="flex gap-2">
@@ -45,21 +46,21 @@ const Footer = () => {
               placeholder="Email" 
               className="bg-slate-900 border border-slate-800 rounded-lg px-4 py-2 text-xs text-white focus:border-gold-500 outline-none w-full italic"
             />
-            <button className="bg-gold-500 text-slate-950 px-4 py-2 rounded-lg font-black text-[10px] uppercase">Join</button>
+            <button className="bg-gold-500 text-slate-950 px-4 py-2 rounded-lg font-black text-[10px] uppercase hover:bg-white transition-all">Join</button>
           </div>
+          <p className="text-[9px] text-slate-600 italic mt-4 font-bold uppercase tracking-wider">Get the latest elite opportunities.</p>
         </div>
       </div>
 
       {/* Bottom Bar */}
-      <div className="max-w-7xl mx-auto pt-8 border-t border-slate-900/50 flex flex-col md:row justify-between items-center gap-4 text-center">
+      <div className="max-w-7xl mx-auto pt-8 border-t border-slate-900/50 flex flex-col md:flex-row justify-between items-center gap-4 text-center">
         <p className="text-[10px] text-slate-600 font-bold uppercase tracking-[0.2em] italic">
           © {new Date().getFullYear()} Elite Works. All Rights Reserved.
         </p>
         <div className="flex gap-6 text-slate-600">
-          {/* Icons placeholder */}
           <span className="text-[10px] font-black hover:text-gold-500 cursor-pointer transition-colors uppercase italic">Twitter</span>
           <span className="text-[10px] font-black hover:text-gold-500 cursor-pointer transition-colors uppercase italic">LinkedIn</span>
-          <span className="text-[10px] font-black hover:text-gold-500 cursor-pointer transition-colors uppercase italic">Instagram</span>
+          <span className="text-[10px] font-black hover:text-gold-500 cursor-pointer transition-colors uppercase italic">Telegram</span>
         </div>
       </div>
     </footer>
