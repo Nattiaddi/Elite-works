@@ -16,7 +16,6 @@ const MyPostings = () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
-    // አሰሪው የለጠፋቸውን ስራዎች ማምጣት
     const { data: jobs, error } = await supabase
       .from('jobs')
       .select('*')
@@ -53,16 +52,31 @@ const MyPostings = () => {
     }
   };
 
-  const updateProposalStatus = async (proposalId, jobId, newStatus) => {
+  // ኖቲፊኬሽን ወደ ዳታቤዝ ለመላክ
+  const createNotification = async (userId, msg) => {
+    await supabase.from('notifications').insert([
+      { user_id: userId, message: msg }
+    ]);
+  };
+
+  // የፕሮፖዛል ሁኔታን ለመቀየር (Hire/Decline)
+  const updateProposalStatus = async (proposalId, jobId, newStatus, freelancerId) => {
     const { error } = await supabase
       .from('proposals')
       .update({ status: newStatus })
       .eq('id', proposalId);
 
-    if (error) alert("Error: " + error.message);
-    else {
+    if (error) {
+      alert("Error: " + error.message);
+    } else {
       alert(`Proposal ${newStatus}! ✨`);
-      // ዳታውን እንደገና አድስ
+      
+      // ፍሪላንሰሩ ከተቀጠረ ኖቲፊኬሽን ላክለት
+      if (newStatus === 'accepted') {
+        await createNotification(freelancerId, "Congratulations! You have been hired for a project. ✨");
+      }
+      
+      // ዳታውን አድስ
       fetchProposalsForJob(jobId);
     }
   };
@@ -99,7 +113,7 @@ const MyPostings = () => {
                       Budget: ${job.budget}
                     </span>
                   </div>
-                  <h3 className="text-xl font-bold text-white italic">{job.title}</h3>
+                  <h3 className="text-xl font-bold text-white mb-4 italic">{job.title}</h3>
                 </div>
                 
                 <button 
@@ -110,15 +124,14 @@ const MyPostings = () => {
                 </button>
               </div>
 
-              {/* Applicants List (Collapsible) */}
               {expandedJob === job.id && (
                 <div className="bg-slate-950/50 border-t border-slate-800 p-8 space-y-6">
                   <h4 className="text-gold-500 font-black italic uppercase text-[10px] tracking-[0.2em] mb-4">Received Proposals</h4>
                   
-                  {proposals[job.id]?.length === 0 ? (
+                  {!proposals[job.id] || proposals[job.id].length === 0 ? (
                     <p className="text-slate-600 italic text-sm">No applications received yet.</p>
                   ) : (
-                    proposals[job.id]?.map((prop) => (
+                    proposals[job.id].map((prop) => (
                       <div key={prop.id} className="bg-slate-900/40 border border-slate-800 p-6 rounded-2xl">
                         <div className="flex justify-between items-start mb-4">
                           <div>
@@ -134,20 +147,22 @@ const MyPostings = () => {
                         </div>
                         <p className="text-slate-400 text-sm italic mb-6 leading-relaxed">{prop.cover_letter}</p>
                         
-                        <div className="flex gap-4">
-                          <button 
-                            onClick={() => updateProposalStatus(prop.id, job.id, 'accepted')}
-                            className="bg-green-600 hover:bg-green-500 text-white px-6 py-2 rounded-lg font-black uppercase text-[9px] tracking-widest transition-all"
-                          >
-                            Hire
-                          </button>
-                          <button 
-                            onClick={() => updateProposalStatus(prop.id, job.id, 'rejected')}
-                            className="bg-slate-800 hover:bg-red-600 text-white px-6 py-2 rounded-lg font-black uppercase text-[9px] tracking-widest transition-all"
-                          >
-                            Decline
-                          </button>
-                        </div>
+                        {prop.status === 'pending' && (
+                          <div className="flex gap-4">
+                            <button 
+                              onClick={() => updateProposalStatus(prop.id, job.id, 'accepted', prop.freelancer_id)}
+                              className="bg-green-600 hover:bg-green-500 text-white px-6 py-2 rounded-lg font-black uppercase text-[9px] tracking-widest transition-all"
+                            >
+                              Hire
+                            </button>
+                            <button 
+                              onClick={() => updateProposalStatus(prop.id, job.id, 'rejected', prop.freelancer_id)}
+                              className="bg-slate-800 hover:bg-red-600 text-white px-6 py-2 rounded-lg font-black uppercase text-[9px] tracking-widest transition-all"
+                            >
+                              Decline
+                            </button>
+                          </div>
+                        )}
                       </div>
                     ))
                   )}
