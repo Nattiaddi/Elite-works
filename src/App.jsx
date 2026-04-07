@@ -14,6 +14,9 @@ import HelpCenter from './pages/HelpCenter';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Footer from './components/Footer';
+import Terms from './pages/Terms';
+import Privacy from './pages/Privacy';
+import Contact from './pages/Contact';
 
 function App() {
   return (
@@ -45,6 +48,9 @@ function App() {
             <Route path="/profile" element={<Profile />} />
             <Route path="/my-postings" element={<MyPostings />} />
             <Route path="/my-proposals" element={<MyApplications />} />
+            <Route path="/terms" element={<Terms />} />
+            <Route path="/privacy" element={<Privacy />} />
+            <Route path="/contact" element={<Contact />} />   
           </Routes>
         </main>
 
