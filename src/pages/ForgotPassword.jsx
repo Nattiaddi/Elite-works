@@ -1,61 +1,61 @@
 import React, { useState } from 'react';
-import { supabase } from '../lib/supabaseClient';
 import { Link } from 'react-router-dom';
+import { supabase } from '../lib/supabaseClient';
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState('');
-  const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleResetRequest = async (e) => {
+  const handleReset = async (e) => {
     e.preventDefault();
     setLoading(true);
-    
+    setMessage('');
+
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password`,
+      redirectTo: `${window.location.origin}/update-password`,
     });
 
     if (error) {
-      alert("ስህተት: " + error.message);
+      setMessage(`Error: ${error.message}`);
     } else {
-      setMessage("የይለፍ ቃል መቀየሪያ ሊንክ ወደ ኢሜይልዎ ተልኳል! 📧");
+      setMessage("A password reset link has been sent to your email. Check your inbox.");
     }
     setLoading(false);
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6 relative overflow-hidden">
-      <div className="w-full max-w-md bg-slate-900/40 border border-slate-800 p-10 rounded-[2.5rem] backdrop-blur-2xl relative z-10">
-        <h2 className="text-3xl font-black italic text-gold-500 mb-2">Reset Password</h2>
-        <p className="text-slate-500 text-sm mb-8 font-medium italic">ኢሜይልዎን ያስገቡ፣ የለውጥ ሊንክ እንልክልዎታለን።</p>
+    <div className="min-h-screen bg-slate-950 flex items-center justify-center px-6">
+      <div className="max-w-md w-full bg-slate-900 border border-slate-800 p-10 rounded-[3rem] text-center backdrop-blur-xl">
+        <h2 className="text-3xl font-black text-white uppercase italic tracking-tighter mb-4 leading-none">Recover <span className="text-gold-500">Account</span></h2>
+        <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest italic mb-8">Enter your email to receive a secure link.</p>
+        
+        <form onSubmit={handleReset} className="space-y-6">
+          <input 
+            type="email" 
+            placeholder="REGISTERED EMAIL ADDRESS" 
+            className="w-full bg-slate-950 border border-slate-800 rounded-2xl p-5 text-xs text-white outline-none focus:border-gold-500 italic transition-all" 
+            required 
+            onChange={e => setEmail(e.target.value)} 
+          />
+          <button 
+            disabled={loading}
+            className="w-full bg-gold-500 text-slate-950 py-5 rounded-2xl font-black uppercase text-xs tracking-[0.3em] shadow-xl shadow-gold-500/10 hover:bg-white transition-all disabled:opacity-50"
+          >
+            {loading ? "Transmitting..." : "Send Reset Link"}
+          </button>
+        </form>
 
-        {message ? (
-          <div className="bg-gold-500/10 border border-gold-500/20 text-gold-500 p-4 rounded-2xl text-center font-bold italic">
+        {message && (
+          <p className="mt-8 text-[10px] text-gold-500 font-black uppercase tracking-widest italic bg-gold-500/5 p-4 rounded-xl border border-gold-500/20 animate-pulse">
             {message}
-          </div>
-        ) : (
-          <form onSubmit={handleResetRequest} className="space-y-6">
-            <div>
-              <label className="block text-slate-500 text-[10px] uppercase font-black tracking-widest mb-2 ml-1">Email Address</label>
-              <input 
-                type="email" 
-                required 
-                className="w-full bg-slate-950 border border-slate-800 text-white px-5 py-4 rounded-2xl focus:border-gold-500/50 outline-none transition-all"
-                placeholder="your@email.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </div>
-            <button 
-              disabled={loading}
-              className="w-full bg-gold-500 text-slate-950 font-black py-4 rounded-2xl hover:bg-gold-400 transition-all uppercase tracking-widest text-xs"
-            >
-              {loading ? 'Sending...' : 'Send Reset Link'}
-            </button>
-          </form>
+          </p>
         )}
-        <div className="mt-8 text-center">
-          <Link to="/login" className="text-slate-500 text-xs font-bold hover:text-gold-500 uppercase tracking-widest italic">← Back to Login</Link>
+
+        <div className="mt-8">
+           <Link to="/login" className="text-slate-600 text-[10px] font-black uppercase tracking-widest italic hover:text-white transition-colors">
+              ← Return to Login
+           </Link>
         </div>
       </div>
     </div>
