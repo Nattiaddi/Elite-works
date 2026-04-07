@@ -4,114 +4,159 @@ import { Link } from 'react-router-dom';
 
 const MyPostings = () => {
   const [myJobs, setMyJobs] = useState([]);
-  const [proposals, setProposals] = useState({}); // ስራዎቹ ላይ የመጡ ማመልከቻዎች
+  const [proposals, setProposals] = useState({});
   const [loading, setLoading] = useState(true);
+  const [expandedJob, setExpandedJob] = useState(null);
 
   useEffect(() => {
-    const fetchMyContent = async () => {
-      setLoading(true);
-      const { data: { user } } = await supabase.auth.getUser();
-
-      if (!user) return;
-
-      // 1. የኔን ስራዎች ማምጣት
-      const { data: jobs, error: jobError } = await supabase
-        .from('jobs')
-        .select('*')
-        .eq('client_id', user.id)
-        .order('created_at', { ascending: false });
-
-      if (jobs) {
-        setMyJobs(jobs);
-        
-        // 2. ለእያንዳንዱ ስራ የመጡ ማመልከቻዎችን ማምጣት
-        const { data: allProposals, error: propError } = await supabase
-          .from('proposals')
-          .select('*')
-          .in('job_id', jobs.map(j => j.id));
-
-        if (allProposals) {
-          // ማመልከቻዎቹን በ Job ID ግሩፕ ማድረግ
-          const grouped = allProposals.reduce((acc, prop) => {
-            if (!acc[prop.job_id]) acc[prop.job_id] = [];
-            acc[prop.job_id].push(prop);
-            return acc;
-          }, {});
-          setProposals(grouped);
-        }
-      }
-      setLoading(false);
-    };
-
-    fetchMyContent();
+    fetchMyJobs();
   }, []);
 
-  if (loading) return <div className="min-h-screen bg-slate-950 flex items-center justify-center text-gold-500 font-black italic animate-pulse">FETCHING YOUR ELITE POSTS...</div>;
+  const fetchMyJobs = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    // አሰሪው የለጠፋቸውን ስራዎች ማምጣት
+    const { data: jobs, error } = await supabase
+      .from('jobs')
+      .select('*')
+      .eq('client_id', user.id)
+      .order('created_at', { ascending: false });
+
+    if (error) console.error('Error fetching jobs:', error);
+    else setMyJobs(jobs);
+    setLoading(false);
+  };
+
+  const fetchProposalsForJob = async (jobId) => {
+    if (expandedJob === jobId) {
+      setExpandedJob(null);
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from('proposals')
+      .select(`
+        id,
+        cover_letter,
+        status,
+        freelancer_id,
+        created_at,
+        profiles (full_name, bio)
+      `)
+      .eq('job_id', jobId);
+
+    if (error) console.error('Error fetching proposals:', error);
+    else {
+      setProposals({ ...proposals, [jobId]: data });
+      setExpandedJob(jobId);
+    }
+  };
+
+  const updateProposalStatus = async (proposalId, jobId, newStatus) => {
+    const { error } = await supabase
+      .from('proposals')
+      .update({ status: newStatus })
+      .eq('id', proposalId);
+
+    if (error) alert("Error: " + error.message);
+    else {
+      alert(`Proposal ${newStatus}! ✨`);
+      // ዳታውን እንደገና አድስ
+      fetchProposalsForJob(jobId);
+    }
+  };
+
+  if (loading) return <div className="p-20 text-gold-500 font-black italic animate-pulse text-center">Loading Your Postings...</div>;
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white p-6 md:p-12">
-      <div className="max-w-6xl mx-auto">
-        <div className="mb-12 flex justify-between items-end">
-          <div>
-            <h1 className="text-4xl font-black italic tracking-tighter">My <span className="text-gold-500">Postings</span></h1>
-            <p className="text-slate-500 text-sm font-medium italic mt-2">Manage your listings and review top talent proposals.</p>
-          </div>
-          <Link to="/post-job" className="bg-gold-500 text-slate-950 px-8 py-3 rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-white transition-all">
-            Post New Job
+    <div className="max-w-6xl mx-auto px-6 py-12">
+      <div className="mb-12">
+        <h2 className="text-4xl font-black italic text-white mb-2 uppercase tracking-tighter">
+          Manage <span className="text-gold-500">My Postings</span>
+        </h2>
+        <p className="text-slate-500 font-medium italic">Review applications and hire the best elite talent.</p>
+      </div>
+
+      {myJobs.length === 0 ? (
+        <div className="text-center py-32 border border-dashed border-slate-900 rounded-[3rem]">
+          <p className="text-slate-600 italic font-bold tracking-widest uppercase text-[10px] mb-8">You haven't posted any jobs yet.</p>
+          <Link to="/post-job" className="bg-gold-500 text-slate-950 px-10 py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-white transition-all">
+            Post Your First Job
           </Link>
         </div>
-
-        {myJobs.length === 0 ? (
-          <div className="text-center py-20 bg-slate-900/20 rounded-[3rem] border border-dashed border-slate-800">
-            <p className="text-slate-500 font-bold italic">You haven't posted any jobs yet.</p>
-          </div>
-        ) : (
-          <div className="space-y-8">
-            {myJobs.map((job) => (
-              <div key={job.id} className="bg-slate-900/40 border border-slate-800 rounded-[2.5rem] overflow-hidden">
-                {/* Job Header */}
-                <div className="p-8 border-b border-slate-800 flex justify-between items-center bg-slate-900/20">
-                  <div>
-                    <h2 className="text-xl font-black text-white italic mb-1">{job.title}</h2>
-                    <p className="text-[10px] font-black uppercase text-slate-500 tracking-widest">
-                      Budget: <span className="text-gold-500">{job.budget} ETB</span> • {new Date(job.created_at).toLocaleDateString()}
-                    </p>
-                  </div>
-                  <div className="bg-gold-500/10 border border-gold-500/20 px-4 py-2 rounded-xl">
-                    <span className="text-gold-500 font-black text-xs uppercase italic">
-                      {proposals[job.id]?.length || 0} Proposals
+      ) : (
+        <div className="space-y-6">
+          {myJobs.map((job) => (
+            <div key={job.id} className="bg-slate-900/30 border border-slate-800 rounded-[2.5rem] overflow-hidden transition-all hover:border-slate-700">
+              <div className="p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                <div>
+                  <div className="flex items-center gap-3 mb-2">
+                    <span className="text-[9px] font-black uppercase tracking-widest text-gold-500 bg-gold-500/5 px-3 py-1 rounded-md border border-gold-500/10 italic">
+                      {job.category}
+                    </span>
+                    <span className="text-slate-500 text-[10px] font-bold italic uppercase tracking-tighter">
+                      Budget: ${job.budget}
                     </span>
                   </div>
+                  <h3 className="text-xl font-bold text-white italic">{job.title}</h3>
                 </div>
+                
+                <button 
+                  onClick={() => fetchProposalsForJob(job.id)}
+                  className="bg-slate-950 border border-slate-800 text-white px-8 py-3 rounded-xl font-black uppercase tracking-widest text-[10px] hover:border-gold-500 hover:text-gold-500 transition-all"
+                >
+                  {expandedJob === job.id ? 'Hide Applicants' : 'View Applicants'}
+                </button>
+              </div>
 
-                {/* Proposals List */}
-                <div className="p-8 space-y-6">
-                  {proposals[job.id]?.length > 0 ? (
-                    proposals[job.id].map((prop) => (
-                      <div key={prop.id} className="bg-slate-950/50 p-6 rounded-2xl border border-slate-800 hover:border-gold-500/30 transition-all">
+              {/* Applicants List (Collapsible) */}
+              {expandedJob === job.id && (
+                <div className="bg-slate-950/50 border-t border-slate-800 p-8 space-y-6">
+                  <h4 className="text-gold-500 font-black italic uppercase text-[10px] tracking-[0.2em] mb-4">Received Proposals</h4>
+                  
+                  {proposals[job.id]?.length === 0 ? (
+                    <p className="text-slate-600 italic text-sm">No applications received yet.</p>
+                  ) : (
+                    proposals[job.id]?.map((prop) => (
+                      <div key={prop.id} className="bg-slate-900/40 border border-slate-800 p-6 rounded-2xl">
                         <div className="flex justify-between items-start mb-4">
                           <div>
-                            <h3 className="font-black text-gold-500 italic uppercase tracking-tighter">{prop.freelancer_name}</h3>
-                            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Bid: {prop.bid_amount} ETB</p>
+                            <p className="text-white font-black italic">{prop.profiles?.full_name || 'Elite Freelancer'}</p>
+                            <p className="text-[10px] text-slate-500 font-bold uppercase italic">{new Date(prop.created_at).toLocaleDateString()}</p>
                           </div>
-                          <button className="text-[10px] font-black uppercase tracking-widest text-white bg-slate-800 px-4 py-2 rounded-lg hover:bg-gold-500 hover:text-slate-950 transition-all">
-                            View Portfolio
+                          <span className={`text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-md ${
+                            prop.status === 'accepted' ? 'bg-green-500/10 text-green-500' : 
+                            prop.status === 'rejected' ? 'bg-red-500/10 text-red-500' : 'bg-gold-500/10 text-gold-500'
+                          }`}>
+                            {prop.status}
+                          </span>
+                        </div>
+                        <p className="text-slate-400 text-sm italic mb-6 leading-relaxed">{prop.cover_letter}</p>
+                        
+                        <div className="flex gap-4">
+                          <button 
+                            onClick={() => updateProposalStatus(prop.id, job.id, 'accepted')}
+                            className="bg-green-600 hover:bg-green-500 text-white px-6 py-2 rounded-lg font-black uppercase text-[9px] tracking-widest transition-all"
+                          >
+                            Hire
+                          </button>
+                          <button 
+                            onClick={() => updateProposalStatus(prop.id, job.id, 'rejected')}
+                            className="bg-slate-800 hover:bg-red-600 text-white px-6 py-2 rounded-lg font-black uppercase text-[9px] tracking-widest transition-all"
+                          >
+                            Decline
                           </button>
                         </div>
-                        <p className="text-slate-400 text-sm italic leading-relaxed">
-                          "{prop.cover_letter}"
-                        </p>
                       </div>
                     ))
-                  ) : (
-                    <p className="text-slate-600 text-xs italic font-medium">No proposals yet. High-quality talent will apply soon!</p>
                   )}
                 </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
