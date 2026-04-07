@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
 // Components & Pages Import
 import Navbar from './components/Navbar';
+import Footer from './components/Footer';
 import LandingPage from './pages/LandingPage';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
@@ -20,14 +21,15 @@ import Contact from './pages/Contact';
 function App() {
   return (
     <Router>
-      <div className="min-h-screen bg-slate-950 selection:bg-gold-500/30">
+      <div className="min-h-screen bg-slate-950 text-white selection:bg-gold-500/30 flex flex-col">
         {/* Navbar በሁሉም ገጾች ላይ ከላይ ሆኖ እንዲታይ */}
         <Navbar />
         
-        {/* ይዘቱ ከNavbar በታች እንዲጀምር pt-24 (Padding Top) ሰጥተነዋል */}
-        <div className="pt-24"> 
+        {/* ዋናው ይዘት (Main Content) */}
+        {/* min-h-[80vh] ማድረጋችን ይዘቱ ትንሽ ቢሆንም እንኳ Footer-ን ወደ ታች ይገፋዋል */}
+        <main className="flex-grow pt-24 min-h-[80vh]"> 
           <Routes>
-            {/* ለሁሉም እንግዳ የሚታይ መግቢያ */}
+            {/* መግቢያ ገጽ */}
             <Route path="/" element={<LandingPage />} />
             
             {/* የማንነት ማረጋገጫ ገጾች */}
@@ -36,7 +38,7 @@ function App() {
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             
-            {/* የገቡ ተጠቃሚዎች ገጽ (Dashboard) */}
+            {/* የተጠቃሚ ገጾች */}
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/profile" element={<Profile />} />
             
@@ -50,7 +52,10 @@ function App() {
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
           </Routes>
-        </div>
+        </main>
+
+        {/* Footer በሁሉም ገጾች ግርጌ እንዲታይ */}
+        <Footer />
       </div>
     </Router>
   );
