@@ -1,104 +1,144 @@
 import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
-import { useNavigate } from 'react-router-dom';
+import { User, Mail, Lock, ShieldCheck, AlertCircle } from 'lucide-react';
 
 const Signup = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [role, setRole] = useState('freelancer'); // Default role
+  const [formData, setFormData] = useState({ fullName: '', email: '', password: '' });
+  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
   const navigate = useNavigate();
+
+  // የይለፍ ቃል ጥንካሬን ቼክ ማድረጊያ (Regex)
+  const validatePassword = (pass) => {
+    const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    return regex.test(pass);
+  };
 
   const handleSignup = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setError('');
 
-    // 1. Supabase Auth ምዝገባ
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
+    if (!validatePassword(formData.password)) {
+      setError("Password must be 8+ chars with Uppercase, Lowercase, Number & Special character.");
+      setLoading(false);
+      return;
+    }
+
+    const { data, error: signupError } = await supabase.auth.signUp({
+      email: formData.email,
+      password: formData.password,
+      options: {
+        data: { full_name: formData.fullName },
+        emailRedirectTo: `${window.location.origin}/login`
+      }
     });
 
-    if (error) {
-      alert(error.message);
+    if (signupError) {
+      setError(signupError.message);
     } else {
-      // 2. በ Profiles ቴብል ላይ ሮልን መመዝገብ
-      const user = data.user;
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .update({ role: role }) // ሮሉን እዚህ ጋር እናስቀምጣለን
-        .eq('id', user.id);
-
-      if (!profileError) {
-        alert("Check your email for confirmation!");
-        navigate('/login');
+      setSuccess(true);
+      // ፕሮፋይል ቴብል ላይ ዳታውን መመዝገብ
+      if (data.user) {
+        await supabase.from('profiles').insert([
+          { id: data.user.id, full_name: formData.fullName, email: formData.email }
+        ]);
       }
     }
     setLoading(false);
   };
 
+  if (success) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center px-6">
+        <div className="max-w-md w-full bg-slate-900/40 border border-slate-800 p-12 rounded-[3rem] text-center backdrop-blur-xl">
+          <div className="w-20 h-20 bg-gold-500/20 border border-gold-500/50 rounded-3xl flex items-center justify-center mx-auto mb-8">
+            <Mail className="w-10 h-10 text-gold-500" />
+          </div>
+          <h2 className="text-2xl font-black italic uppercase tracking-tighter text-white mb-4">Check Your Email</h2>
+          <p className="text-slate-400 text-xs font-medium leading-relaxed italic mb-8">
+            We've sent a verification link to <span className="text-white">{formData.email}</span>. 
+            Please verify to activate your Elite account.
+          </p>
+          <Link to="/login" className="text-gold-500 text-[10px] font-black uppercase tracking-widest hover:text-white transition-colors">Back to Login</Link>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-slate-950 flex items-center justify-center px-6">
-      <div className="max-w-md w-full bg-slate-900/50 border border-slate-800 p-10 rounded-[3rem] backdrop-blur-xl">
-        <h2 className="text-3xl font-black italic text-white mb-2 uppercase tracking-tighter text-center">
-          Join <span className="text-gold-500">Elite</span>
-        </h2>
-        <p className="text-slate-500 text-[10px] font-bold uppercase tracking-[0.2em] text-center mb-10 italic">
-          Select your path in the elite marketplace
-        </p>
+    <div className="min-h-screen bg-slate-950 flex items-center justify-center px-6 py-20">
+      <div className="max-w-md w-full bg-slate-900/30 border border-slate-800 p-10 rounded-[3rem] backdrop-blur-xl shadow-2xl">
+        <div className="text-center mb-10">
+          <h1 className="text-3xl font-black italic uppercase tracking-tighter text-white">Join <span className="text-gold-500">Elite</span></h1>
+          <p className="text-[9px] text-slate-500 font-bold uppercase tracking-[0.3em] mt-2 italic">Luxury Freelance Marketplace</p>
+        </div>
 
         <form onSubmit={handleSignup} className="space-y-6">
-          {/* Role Selection Tabs */}
-          <div className="flex gap-4 mb-8">
-            <button
-              type="button"
-              onClick={() => setRole('freelancer')}
-              className={`flex-1 py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest transition-all border ${
-                role === 'freelancer' 
-                ? 'bg-gold-500 text-slate-950 border-gold-500 shadow-lg shadow-gold-500/20' 
-                : 'bg-slate-950 text-slate-500 border-slate-800 hover:border-gold-500/30'
-              }`}
-            >
-              Freelancer
-            </button>
-            <button
-              type="button"
-              onClick={() => setRole('client')}
-              className={`flex-1 py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest transition-all border ${
-                role === 'client' 
-                ? 'bg-gold-500 text-slate-950 border-gold-500 shadow-lg shadow-gold-500/20' 
-                : 'bg-slate-950 text-slate-500 border-slate-800 hover:border-gold-500/30'
-              }`}
-            >
-              Client
-            </button>
+          {/* Full Name */}
+          <div className="space-y-2">
+            <div className="relative">
+              <User className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+              <input 
+                type="text" 
+                required
+                placeholder="FULL NAME"
+                className="w-full bg-slate-950 border border-slate-800 rounded-2xl pl-12 pr-6 py-4 text-[10px] font-black tracking-widest outline-none focus:border-gold-500/50 text-white italic"
+                onChange={(e) => setFormData({...formData, fullName: e.target.value})}
+              />
+            </div>
           </div>
 
-          <div className="space-y-4">
-            <input
-              type="email"
-              placeholder="EMAIL ADDRESS"
-              className="w-full bg-slate-950 border border-slate-800 rounded-2xl px-6 py-4 text-white text-sm outline-none focus:border-gold-500/50 italic"
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-            <input
-              type="password"
-              placeholder="PASSWORD"
-              className="w-full bg-slate-950 border border-slate-800 rounded-2xl px-6 py-4 text-white text-sm outline-none focus:border-gold-500/50 italic"
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
+          {/* Email */}
+          <div className="space-y-2">
+            <div className="relative">
+              <Mail className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+              <input 
+                type="email" 
+                required
+                placeholder="EMAIL ADDRESS"
+                className="w-full bg-slate-950 border border-slate-800 rounded-2xl pl-12 pr-6 py-4 text-[10px] font-black tracking-widest outline-none focus:border-gold-500/50 text-white italic"
+                onChange={(e) => setFormData({...formData, email: e.target.value})}
+              />
+            </div>
           </div>
 
-          <button
-            type="submit"
+          {/* Password */}
+          <div className="space-y-2">
+            <div className="relative">
+              <Lock className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+              <input 
+                type="password" 
+                required
+                placeholder="STRONG PASSWORD"
+                className="w-full bg-slate-950 border border-slate-800 rounded-2xl pl-12 pr-6 py-4 text-[10px] font-black tracking-widest outline-none focus:border-gold-500/50 text-white italic"
+                onChange={(e) => setFormData({...formData, password: e.target.value})}
+              />
+            </div>
+            <div className="flex items-center gap-2 px-2 text-[8px] text-slate-500 font-bold uppercase tracking-tighter italic">
+              <ShieldCheck className="w-3 h-3 text-gold-500" /> Use A-z, 0-9 & @$!%*
+            </div>
+          </div>
+
+          {error && (
+            <div className="bg-red-500/10 border border-red-500/20 p-4 rounded-xl flex items-center gap-3 text-red-500 text-[9px] font-black uppercase italic">
+              <AlertCircle className="w-4 h-4 shrink-0" /> {error}
+            </div>
+          )}
+
+          <button 
             disabled={loading}
-            className="w-full bg-white text-slate-950 py-5 rounded-2xl font-black uppercase tracking-[0.2em] text-xs hover:bg-gold-500 transition-all active:scale-95 shadow-xl"
+            className="w-full bg-gold-500 text-slate-950 py-5 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] hover:bg-white transition-all shadow-xl shadow-gold-500/10"
           >
             {loading ? 'Processing...' : 'Create Account'}
           </button>
         </form>
+
+        <p className="text-center mt-8 text-[9px] text-slate-500 font-bold uppercase tracking-widest italic">
+          Already a member? <Link to="/login" className="text-white hover:text-gold-500 transition-colors ml-1">Login</Link>
+        </p>
       </div>
     </div>
   );
