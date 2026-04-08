@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
-import Footer from '../components/Footer';
-import { categories } from '../constants/categories'; // የዘርፎች ዳታ
+import { categories } from '../constants/categories';
 
 const Home = () => {
   const [user, setUser] = useState(null);
@@ -52,7 +51,7 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Category Section - አዲስ የተጨመረ */}
+      {/* Category Section */}
       <section className="py-20 border-t border-slate-900/50">
         <div className="max-w-7xl mx-auto px-6">
           <div className="mb-12">
@@ -84,7 +83,7 @@ const Home = () => {
       </section>
       
       {/* Featured Section */}
-      <div className="max-w-7xl mx-auto px-6 py-20 border-t border-slate-900/50">
+      <section className="max-w-7xl mx-auto px-6 py-20 border-t border-slate-900/50 mb-20">
         <h2 className="text-3xl font-black italic text-white mb-2 uppercase tracking-tighter">
           Featured <span className="text-gold-500">Opportunities</span>
         </h2>
@@ -92,13 +91,22 @@ const Home = () => {
           Hand-picked premium listings for you.
         </p>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-           <div className="h-64 bg-slate-900/40 border border-slate-800 rounded-[3rem] p-8 hover:border-gold-500/20 transition-all"></div>
-           <div className="h-64 bg-slate-900/40 border border-slate-800 rounded-[3rem] p-8 hover:border-gold-500/20 transition-all"></div>
-           <div className="h-64 bg-slate-900/40 border border-slate-800 rounded-[3rem] p-8 hover:border-gold-500/20 transition-all"></div>
+           <div className="h-64 bg-slate-900/40 border border-slate-800 rounded-[3rem] p-8 hover:border-gold-500/20 transition-all group overflow-hidden relative">
+              <div className="absolute inset-0 bg-gold-500/5 translate-y-full group-hover:translate-y-0 transition-transform duration-500"></div>
+              <div className="relative z-10 h-full border border-dashed border-slate-800 rounded-2xl flex items-center justify-center text-slate-700 italic text-sm">Premium Slot</div>
+           </div>
+           <div className="h-64 bg-slate-900/40 border border-slate-800 rounded-[3rem] p-8 hover:border-gold-500/20 transition-all group overflow-hidden relative">
+              <div className="absolute inset-0 bg-gold-500/5 translate-y-full group-hover:translate-y-0 transition-transform duration-500"></div>
+              <div className="relative z-10 h-full border border-dashed border-slate-800 rounded-2xl flex items-center justify-center text-slate-700 italic text-sm">Premium Slot</div>
+           </div>
+           <div className="h-64 bg-slate-900/40 border border-slate-800 rounded-[3rem] p-8 hover:border-gold-500/20 transition-all group overflow-hidden relative">
+              <div className="absolute inset-0 bg-gold-500/5 translate-y-full group-hover:translate-y-0 transition-transform duration-500"></div>
+              <div className="relative z-10 h-full border border-dashed border-slate-800 rounded-2xl flex items-center justify-center text-slate-700 italic text-sm">Premium Slot</div>
+           </div>
         </div>
-      </div>
-
-      <Footer />
+      </section>
+      
+      {/* ማሳሰቢያ፡ Footer እዚህ አያስፈልግም፣ App.jsx ላይ ስላለ በራሱ ይመጣል */}
     </div>
   );
 };
