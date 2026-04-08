@@ -1,119 +1,107 @@
 import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
-import { useNavigate, Link } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
+import { Mail, Lock, Eye, EyeOff, LogIn, AlertCircle } from 'lucide-react';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false); // ፓስዎርድ እንዲታይ/እንዲደበቅ
+  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  
   const navigate = useNavigate();
-  const { t, i18n } = useTranslation();
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError(null);
+    setError('');
 
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { error: loginError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
 
-    if (error) {
-      setError(error.message);
+    if (loginError) {
+      setError("Invalid email or password. Please try again.");
+      setLoading(false);
     } else {
       navigate('/dashboard');
     }
-    setLoading(false);
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6 selection:bg-gold-500/30">
-      {/* Background Decoration */}
-      <div className="absolute top-0 left-0 w-full h-full overflow-hidden -z-10">
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-gold-500/5 blur-[120px] rounded-full"></div>
-        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-gold-500/5 blur-[120px] rounded-full"></div>
-      </div>
-
-      <div className="w-full max-w-md">
-        {/* Logo Section */}
+    <div className="min-h-screen bg-slate-950 flex items-center justify-center px-6">
+      <div className="max-w-md w-full bg-slate-900/30 border border-slate-800 p-10 rounded-[3rem] backdrop-blur-xl shadow-2xl">
         <div className="text-center mb-10">
-          <Link to="/" className="text-3xl font-black text-gold-500 italic tracking-tighter">
-            Elite Works
-          </Link>
-          <p className="text-slate-500 text-sm mt-3 font-medium tracking-wide">
-            {t('login_subtitle') || 'ወደ አካውንትዎ ይግቡ'}
-          </p>
+          <h1 className="text-3xl font-black italic uppercase tracking-tighter text-white">Welcome <span className="text-gold-500">Back</span></h1>
+          <p className="text-[9px] text-slate-500 font-bold uppercase tracking-[0.3em] mt-2 italic">Access your Elite dashboard</p>
         </div>
 
-        {/* Login Card */}
-        <div className="bg-slate-900/50 border border-slate-800 p-8 rounded-[2.5rem] backdrop-blur-xl shadow-2xl">
-          <form onSubmit={handleLogin} className="space-y-6">
-            {error && (
-              <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-xs py-3 px-4 rounded-xl text-center font-bold">
-                {error}
-              </div>
-            )}
-
-            <div>
-              <label className="block text-slate-400 text-[10px] uppercase font-black tracking-[0.2em] mb-2 ml-1">
-                Email Address
-              </label>
-              <input
-                type="email"
-                placeholder="example@elite.com"
-                className="w-full bg-slate-950 border border-slate-800 text-white px-5 py-4 rounded-2xl focus:outline-none focus:border-gold-500/50 transition-all placeholder:text-slate-700"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-slate-400 text-[10px] uppercase font-black tracking-[0.2em] mb-2 ml-1">
-                Password
-              </label>
-              <input
-                type="password"
-                placeholder="••••••••"
-                className="w-full bg-slate-950 border border-slate-800 text-white px-5 py-4 rounded-2xl focus:outline-none focus:border-gold-500/50 transition-all placeholder:text-slate-700"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </div>
-
-          <div className="text-right mt-2">
-            <Link to="/forgot-password" size="sm" className="text-slate-500 text-xs font-bold hover:text-gold-500 italic">
-            Forgot Password?
-    </Link>
-  </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-gradient-to-r from-gold-600 to-gold-400 text-slate-950 font-black py-4 rounded-2xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-gold-500/10 disabled:opacity-50 mt-4"
-            >
-              {loading ? t('loading') : (t('login') || 'ይግቡ')}
-            </button>
-          </form>
-
-          <div className="mt-8 text-center">
-            <p className="text-slate-500 text-sm font-medium">
-              {t('no_account') || 'አካውንት የለዎትም?'} {' '}
-              <Link to="/signup" className="text-gold-500 font-bold hover:underline underline-offset-4">
-                {t('signup') || 'ይመዝገቡ'}
-              </Link>
-            </p>
+        <form onSubmit={handleLogin} className="space-y-6">
+          {/* Email Field */}
+          <div className="relative">
+            <Mail className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+            <input 
+              type="email" 
+              required 
+              placeholder="EMAIL ADDRESS" 
+              className="w-full bg-slate-950 border border-slate-800 rounded-2xl pl-12 pr-6 py-4 text-[10px] font-black tracking-widest outline-none focus:border-gold-500/50 text-white italic"
+              onChange={(e) => setEmail(e.target.value)} 
+            />
           </div>
-        </div>
 
-        {/* Back to Home */}
-        <div className="mt-8 text-center">
-          <Link to="/" className="text-slate-600 text-xs font-bold uppercase tracking-widest hover:text-gold-500 transition-colors">
-            ← {t('back_to_home') || 'ወደ መነሻ ተመለስ'}
-          </Link>
-        </div>
+          {/* Password Field with Toggle */}
+          <div className="relative">
+            <Lock className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+            <input 
+              type={showPassword ? "text" : "password"} 
+              required 
+              placeholder="PASSWORD" 
+              className="w-full bg-slate-950 border border-slate-800 rounded-2xl pl-12 pr-14 py-4 text-[10px] font-black tracking-widest outline-none focus:border-gold-500/50 text-white italic"
+              onChange={(e) => setPassword(e.target.value)} 
+            />
+            
+            {/* የአይን ምልክት Logic */}
+            <button
+              type="button"
+              onMouseDown={() => setShowPassword(true)}
+              onMouseUp={() => setShowPassword(false)}
+              onMouseLeave={() => setShowPassword(false)}
+              onTouchStart={() => setShowPassword(true)}
+              onTouchEnd={() => setShowPassword(false)}
+              className="absolute right-5 top-1/2 -translate-y-1/2 p-1 hover:bg-slate-800 rounded-lg transition-colors"
+            >
+              {showPassword ? (
+                <EyeOff className="w-4 h-4 text-gold-500" />
+              ) : (
+                <Eye className="w-4 h-4 text-slate-500" />
+              )}
+            </button>
+          </div>
+
+          <div className="text-right">
+            <Link to="/forgot-password" self className="text-[9px] text-slate-500 font-bold uppercase hover:text-gold-500 transition-colors italic">
+              Forgot Password?
+            </Link>
+          </div>
+
+          {error && (
+            <div className="bg-red-500/10 border border-red-500/20 p-4 rounded-xl flex items-center gap-3 text-red-500 text-[9px] font-black uppercase italic">
+              <AlertCircle className="w-4 h-4 shrink-0" /> {error}
+            </div>
+          )}
+
+          <button 
+            disabled={loading}
+            className="w-full bg-gold-500 text-slate-950 py-5 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] hover:bg-white transition-all shadow-xl shadow-gold-500/10 active:scale-95 flex items-center justify-center gap-3"
+          >
+            {loading ? 'Authenticating...' : <><LogIn className="w-4 h-4" /> Login to Elite</>}
+          </button>
+        </form>
+
+        <p className="text-center mt-8 text-[9px] text-slate-500 font-bold uppercase tracking-widest italic">
+          Don't have an account? <Link to="/signup" className="text-white hover:text-gold-500 transition-colors ml-1">Sign Up</Link>
+        </p>
       </div>
     </div>
   );
