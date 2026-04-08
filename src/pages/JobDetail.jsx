@@ -1,120 +1,145 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
+import { Clock, DollarSign, Briefcase, MapPin, Send, ShieldCheck } from 'lucide-react';
 
 const JobDetail = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [job, setJob] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [proposal, setProposal] = useState('');
-  const navigate = useNavigate();
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
-    const fetchJob = async () => {
+    const fetchJobAndUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+
       const { data, error } = await supabase
         .from('jobs')
-        .select('*')
+        .select('*, profiles(full_name, avatar_url)')
         .eq('id', id)
         .single();
 
-      if (error) {
-        console.error('Error:', error);
-        navigate('/find-jobs');
-      } else {
-        setJob(data);
-      }
+      if (error) navigate('/find-jobs');
+      else setJob(data);
       setLoading(false);
     };
-
-    fetchJob();
+    fetchJobAndUser();
   }, [id, navigate]);
 
-  const handleApply = async (e) => {
-    e.preventDefault();
-    const { data: { user } } = await supabase.auth.getUser();
-
-    if (!user) {
-      alert("ማመልከት ከመቻልህ በፊት Login ማድረግ አለብህ!");
-      return;
-    }
-
-    const { error } = await supabase.from('proposals').insert([
-      { job_id: id, freelancer_id: user.id, cover_letter: proposal }
-    ]);
-
-    if (error) alert("ስህተት ተፈጥሯል: " + error.message);
-    else {
-      alert("ማመልከቻህ በስኬት ተልኳል! 🚀");
-      setProposal('');
-    }
-  };
-
-  if (loading) return <div className="p-20 text-gold-500 font-black italic animate-pulse">Loading Project...</div>;
+  if (loading) return <div className="min-h-screen bg-slate-950 flex items-center justify-center text-gold-500 italic tracking-widest font-black uppercase text-xs">Loading Elite Opportunity...</div>;
 
   return (
-    <div className="max-w-5xl mx-auto px-6 py-12 grid grid-cols-1 lg:grid-cols-3 gap-8">
-      
-      {/* Left Column: Job Content */}
-      <div className="lg:col-span-2 space-y-8">
-        <div className="bg-slate-900/30 border border-slate-800 p-8 rounded-3xl backdrop-blur-md">
-          <div className="flex items-center gap-3 mb-6">
-            <span className="bg-gold-500/10 text-gold-500 text-[10px] font-black px-4 py-1.5 rounded-full uppercase tracking-widest italic">
-              {job.category}
-            </span>
-            <span className="text-slate-500 text-[10px] font-bold uppercase tracking-widest italic">
-              Posted: {new Date(job.created_at).toLocaleDateString()}
-            </span>
+    <div className="min-h-screen bg-slate-950 text-white pt-28 pb-20 px-6">
+      <div className="max-w-5xl mx-auto">
+        
+        {/* Header Section */}
+        <div className="bg-slate-900/40 border border-slate-800 rounded-[3rem] p-10 mb-8 relative overflow-hidden backdrop-blur-sm">
+          <div className="absolute top-0 right-0 p-10 opacity-10">
+            <Briefcase className="w-40 h-40 text-gold-500" />
           </div>
 
-          <h1 className="text-4xl md:text-5xl font-black italic text-white mb-6 leading-tight">
-            {job.title}
-          </h1>
-
-          <div className="prose prose-invert max-w-none text-slate-300 italic leading-relaxed text-lg mb-8">
-            {job.description}
-          </div>
-
-          <div className="grid grid-cols-2 gap-4 border-t border-slate-800 pt-8">
-            <div>
-              <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1 italic">Project Budget</p>
-              <p className="text-2xl font-black text-gold-500 italic">${job.budget}</p>
+          <div className="relative z-10">
+            <div className="flex items-center gap-3 mb-6">
+              <span className="px-4 py-1.5 rounded-full border border-gold-500/20 bg-gold-500/5 text-gold-500 text-[10px] font-black uppercase tracking-widest italic">
+                {job.category || 'Premium Listing'}
+              </span>
+              <span className="text-slate-500 text-[10px] font-bold uppercase tracking-widest flex items-center gap-1">
+                <Clock className="w-3 h-3" /> {new Date(job.created_at).toLocaleDateString()}
+              </span>
             </div>
-            <div>
-              <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1 italic">Job Type</p>
-              <p className="text-xl font-black text-white italic">Fixed Price</p>
+
+            <h1 className="text-4xl md:text-5xl font-black italic tracking-tighter uppercase mb-6 leading-none">
+              {job.title}
+            </h1>
+
+            <div className="flex flex-wrap gap-8">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-center">
+                  <DollarSign className="w-5 h-5 text-gold-500" />
+                </div>
+                <div>
+                  <p className="text-[9px] text-slate-500 font-black uppercase tracking-widest">Budget</p>
+                  <p className="text-lg font-black text-white italic">${job.budget}</p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-center">
+                  <ShieldCheck className="w-5 h-5 text-gold-500" />
+                </div>
+                <div>
+                  <p className="text-[9px] text-slate-500 font-black uppercase tracking-widest">Payment</p>
+                  <p className="text-lg font-black text-white italic">Verified</p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Right Column: Application Sidebar */}
-      <div className="space-y-6">
-        <div className="bg-gold-500 p-8 rounded-3xl shadow-2xl shadow-gold-500/10">
-          <h3 className="text-slate-950 font-black text-xl italic mb-4 uppercase tracking-tighter">Submit a Proposal</h3>
-          <form onSubmit={handleApply} className="space-y-4">
-            <textarea 
-              required
-              rows="6"
-              className="w-full bg-slate-950/20 border border-slate-950/20 rounded-2xl p-4 text-slate-950 placeholder-slate-800 focus:outline-none italic font-medium"
-              placeholder="ለምን ይህ ስራ ላንተ እንደሚገባ ግለጽ..."
-              value={proposal}
-              onChange={(e) => setProposal(e.target.value)}
-            ></textarea>
-            <button className="w-full bg-slate-950 text-white py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-white hover:text-slate-950 transition-all">
-              Apply Now
-            </button>
-          </form>
-        </div>
+        {/* Content Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          
+          {/* Main Description */}
+          <div className="lg:col-span-2 space-y-8">
+            <div className="bg-slate-900/20 border border-slate-800/50 rounded-[2.5rem] p-10">
+              <h2 className="text-xl font-black italic uppercase tracking-tighter text-gold-500 mb-6 underline underline-offset-8 decoration-gold-500/20">
+                Job Description
+              </h2>
+              <p className="text-slate-400 leading-relaxed italic font-medium whitespace-pre-line">
+                {job.description}
+              </p>
+            </div>
 
-        <div className="bg-slate-900/30 border border-slate-800 p-6 rounded-3xl">
-          <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4 italic">About the Client</p>
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-slate-800 rounded-full"></div>
-            <div>
-              <p className="text-white font-black italic text-sm tracking-tight italic">Verified Client</p>
-              <p className="text-[9px] text-gold-500 uppercase font-black">⭐⭐⭐⭐⭐ 5.0 Rating</p>
+            <div className="bg-slate-900/20 border border-slate-800/50 rounded-[2.5rem] p-10">
+              <h2 className="text-xl font-black italic uppercase tracking-tighter text-white mb-6">
+                Required <span className="text-gold-500">Skills</span>
+              </h2>
+              <div className="flex flex-wrap gap-3">
+                {job.skills?.split(',').map((skill, i) => (
+                  <span key={i} className="px-5 py-2 rounded-xl bg-slate-950 border border-slate-800 text-[10px] font-black uppercase tracking-widest text-slate-300 italic hover:border-gold-500/40 transition-all cursor-default">
+                    {skill.trim()}
+                  </span>
+                ))}
+              </div>
             </div>
           </div>
+
+          {/* Sidebar Actions */}
+          <div className="space-y-6">
+            <div className="bg-gold-500 p-8 rounded-[2.5rem] text-slate-950 shadow-2xl shadow-gold-500/20">
+              <h3 className="text-lg font-black italic uppercase tracking-tighter mb-4">Interested?</h3>
+              <p className="text-xs font-bold mb-8 leading-relaxed opacity-80 uppercase tracking-tight">
+                Submit your proposal to start working on this elite project.
+              </p>
+              <button className="w-full bg-slate-950 text-white py-5 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] hover:bg-white hover:text-slate-950 transition-all active:scale-95 flex items-center justify-center gap-3">
+                <Send className="w-4 h-4" /> Send Proposal
+              </button>
+            </div>
+
+            <div className="bg-slate-900/40 border border-slate-800 rounded-[2.5rem] p-8">
+              <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-6 italic">About Client</h4>
+              <div className="flex items-center gap-4 mb-6">
+                <div className="w-12 h-12 rounded-2xl bg-slate-800 border border-slate-700 flex items-center justify-center text-gold-500 font-black italic">
+                  {job.profiles?.full_name?.charAt(0) || 'E'}
+                </div>
+                <div>
+                  <p className="text-sm font-black text-white uppercase italic">{job.profiles?.full_name || 'Elite Client'}</p>
+                  <p className="text-[10px] text-slate-500 font-bold tracking-widest flex items-center gap-1 uppercase">
+                    <MapPin className="w-3 h-3" /> Ethiopia
+                  </p>
+                </div>
+              </div>
+              <button 
+                onClick={() => navigate('/messages')}
+                className="w-full border border-slate-800 text-white py-4 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] hover:border-gold-500/50 transition-all italic"
+              >
+                Contact Client
+              </button>
+            </div>
+          </div>
+
         </div>
       </div>
     </div>

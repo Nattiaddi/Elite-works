@@ -32,6 +32,8 @@ import Deposit from './pages/Deposit';
 import AdminDashboard from './pages/AdminDashboard';
 
 // አዲስ የተጨመሩ ገጾች (Imports)
+import JobDetail from './pages/JobDetail'; // ተጨምሯል
+import Messages from './pages/Messages'; // ተጨምሯል
 import PostProposal from './pages/PostProposal';
 import SANTIMShop from './pages/SANTIMShop';
 import ReviewProposals from './pages/ReviewProposals';
@@ -43,7 +45,7 @@ function App() {
   return (
     <Elements stripe={stripePromise}>
       <Router>
-        <div className="pt-20 bg-slate-950 min-h-screen flex flex-col">
+        <div className="bg-slate-950 min-h-screen flex flex-col">
           {/* Navigation */}
           <Navbar />
           
@@ -64,6 +66,7 @@ function App() {
               {/* Jobs & Bids (Elite Bidding System) */}
               <Route path="/find-jobs" element={<FindJobs />} />
               <Route path="/post-job" element={<PostJob />} />
+              <Route path="/job/:id" element={<JobDetail />} /> {/* ID ራውት */}
               <Route path="/apply/:jobId" element={<PostProposal />} />
               <Route path="/santim-shop" element={<SANTIMShop />} />
               <Route path="/review-proposals/:jobId" element={<ReviewProposals />} />
@@ -77,18 +80,21 @@ function App() {
               <Route path="/my-postings" element={<MyPostings />} />
               <Route path="/my-proposals" element={<MyApplications />} />
               
+              {/* Communication & Admin */}
+              <Route path="/messages" element={<Messages />} />
+              <Route path="/admin-command-center" element={<AdminDashboard />} /> 
+
               {/* Legal & Contact */}
               <Route path="/terms" element={<Terms />} />
               <Route path="/privacy" element={<Privacy />} />
-              <Route path="/contact" element={<Contact />} /> 
-              <Route path="/admin-command-center" element={<AdminDashboard />} />  
+              <Route path="/contact" element={<Contact />} />
             </Routes>
           </main>
 
           {/* Footer */}
           <Footer />
 
-          {/* Global Chat Popup - ለ Elite Support የተቀመጠ */}
+          {/* Global Chat Popup */}
           <ChatPopup 
             receiverId="SUPPORT_ADMIN_ID" 
             receiverName="Elite Support" 

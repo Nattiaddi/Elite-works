@@ -1,143 +1,142 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
+import { Send, DollarSign, Clock, AlertCircle, CheckCircle2 } from 'lucide-react';
 
 const PostProposal = () => {
   const { jobId } = useParams();
   const navigate = useNavigate();
+  
   const [job, setJob] = useState(null);
-  const [profile, setProfile] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
-
-  // Form states
-  const [coverLetter, setCoverLetter] = useState('');
+  const [loading, setLoading] = useState(false);
   const [bidAmount, setBidAmount] = useState('');
+  const [deliveryTime, setDeliveryTime] = useState('');
+  const [coverLetter, setCoverLetter] = useState('');
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    const fetchData = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      // 1. የስራውን መረጃ ማምጣት
-      const { data: jobData } = await supabase
-        .from('jobs')
-        .select('*')
-        .eq('id', jobId)
-        .single();
-      setJob(jobData);
-
-      // 2. የተጠቃሚውን የሳንቲም መጠን ማምጣት
-      const { data: profileData } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single();
-      setProfile(profileData);
-      
-      setLoading(false);
+    const fetchJob = async () => {
+      const { data } = await supabase.from('jobs').select('title, budget').eq('id', jobId).single();
+      if (data) setJob(data);
     };
-    fetchData();
+    fetchJob();
   }, [jobId]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (profile.santim < 2) {
-      alert("በቂ የElite SANTIM የለዎትም! እባክዎ ሳንቲም ይግዙ።");
+    setLoading(true);
+    setError('');
+
+    // የደህንነት ጥበቃ (Regex for Links and Phones)
+    const urlPattern = /(https?:\/\/[^\s]+|www\.[^\s]+|[a-z0-9]+\.[a-z]{2,})/gi;
+    const phonePattern = /(\+?[0-9]{1,4}[-.\s]?)?(\(?\d{3}\)?[-.\s]?)?\d{3}[-.\s]?\d{4}/g;
+
+    if (urlPattern.test(coverLetter) || phonePattern.test(coverLetter)) {
+      setError("ለደህንነት ሲባል በፕሮፖዛልዎ ላይ ስልክ ቁጥር ወይም ሊንክ ማካተት የተከለከለ ነው።");
+      setLoading(false);
       return;
     }
 
-    setSubmitting(true);
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user } } = await supabase.auth.getUser();
 
-      // 1. ፕሮፖዛሉን መመዝገብ
-      const { error: proposalError } = await supabase
-        .from('proposals')
-        .insert([{ 
-          job_id: jobId, 
-          freelancer_id: user.id, 
-          cover_letter: coverLetter, 
-          bid_amount: parseFloat(bidAmount),
-          santim_used: 2
-        }]);
+    const { error: submitError } = await supabase.from('proposals').insert([
+      {
+        job_id: jobId,
+        freelancer_id: user.id,
+        bid_amount: parseFloat(bidAmount),
+        delivery_days: parseInt(deliveryTime),
+        cover_letter: coverLetter,
+        status: 'pending'
+      }
+    ]);
 
-      if (proposalError) throw proposalError;
-
-      // 2. ከፍሪላንሰሩ ላይ 2 ሳንቲም መቀነስ
-      const { error: updateError } = await supabase
-        .from('profiles')
-        .update({ santim: profile.santim - 2 })
-        .eq('id', user.id);
-
-      if (updateError) throw updateError;
-
-      alert("ማመልከቻው በ 2 SANTIM ተልኳል!");
-      navigate('/dashboard');
-    } catch (error) {
-      alert("Error: " + error.message);
-    } finally {
-      setSubmitting(false);
+    if (submitError) {
+      setError("Submit ሲደረግ ስህተት ተፈጥሯል። እባክዎ እንደገና ይሞክሩ።");
+    } else {
+      alert("Proposal Sent Successfully! 🚀");
+      navigate('/my-proposals');
     }
+    setLoading(false);
   };
 
-  if (loading) return <div className="text-gold-500 text-center py-20 italic font-black uppercase tracking-widest">Accessing Secure Job Terminal...</div>;
-
   return (
-    <div className="max-w-4xl mx-auto px-6 py-12">
-      {/* Job Summary Card */}
-      <div className="bg-slate-900/40 border border-slate-800 rounded-[2.5rem] p-8 mb-8 backdrop-blur-xl">
-        <p className="text-gold-500 text-[10px] font-black uppercase tracking-[0.3em] mb-2 italic text-center">Applying For</p>
-        <h1 className="text-3xl font-black text-white italic text-center uppercase tracking-tighter">{job?.title}</h1>
-        <div className="mt-6 flex justify-center gap-10 border-t border-slate-800 pt-6">
-          <div className="text-center">
-            <p className="text-slate-500 text-[9px] uppercase font-bold">Client Budget</p>
-            <p className="text-white font-black italic">${job?.budget}</p>
-          </div>
-          <div className="text-center">
-            <p className="text-slate-500 text-[9px] uppercase font-bold">Application Fee</p>
-            <p className="text-gold-500 font-black italic">2 SANTIM</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Proposal Form */}
-      <form onSubmit={handleSubmit} className="bg-slate-900/20 border border-slate-800/50 rounded-[3rem] p-10 space-y-8">
-        <div>
-          <label className="block text-white font-black italic uppercase text-xs tracking-widest mb-4">Your Professional Bid ($)</label>
-          <input 
-            type="number" 
-            required
-            className="w-full bg-slate-950 border border-slate-800 rounded-2xl p-4 text-white font-bold outline-none focus:border-gold-500"
-            placeholder="Enter your amount..."
-            value={bidAmount}
-            onChange={(e) => setBidAmount(e.target.value)}
-          />
-        </div>
-
-        <div>
-          <label className="block text-white font-black italic uppercase text-xs tracking-widest mb-4">Cover Letter (Elite Pitch)</label>
-          <textarea 
-            required
-            className="w-full bg-slate-950 border border-slate-800 rounded-2xl p-6 text-slate-300 text-sm italic h-64 outline-none focus:border-gold-500 leading-relaxed"
-            placeholder="Explain why you are the best fit for this Elite project..."
-            value={coverLetter}
-            onChange={(e) => setCoverLetter(e.target.value)}
-          />
-        </div>
-
-        <div className="flex flex-col items-center gap-4">
-          <p className="text-slate-500 text-[9px] italic uppercase tracking-widest font-bold">
-            Current Balance: <span className="text-gold-500">{profile?.santim} SANTIM</span>
+    <div className="min-h-screen bg-slate-950 text-white pt-28 pb-20 px-6">
+      <div className="max-w-3xl mx-auto">
+        <div className="mb-10">
+          <h1 className="text-3xl font-black italic uppercase tracking-tighter mb-2">
+            Submit <span className="text-gold-500">Proposal</span>
+          </h1>
+          <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest italic">
+            Applying for: <span className="text-white">{job?.title}</span> (Budget: ${job?.budget})
           </p>
-          <button 
-            type="submit"
-            disabled={submitting}
-            className="w-full md:w-auto bg-gold-500 text-slate-950 px-12 py-4 rounded-2xl font-black uppercase text-xs tracking-[0.2em] hover:bg-white transition-all shadow-2xl shadow-gold-500/20 disabled:opacity-50"
-          >
-            {submitting ? 'Transmitting...' : 'Submit Proposal (2 SANTIM)'}
-          </button>
         </div>
-      </form>
+
+        <form onSubmit={handleSubmit} className="space-y-8 bg-slate-900/30 border border-slate-800 p-10 rounded-[3rem] backdrop-blur-xl">
+          
+          {/* Bid & Time Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="space-y-3">
+              <label className="text-[10px] font-black uppercase tracking-widest text-gold-500 ml-2">Your Bid Amount ($)</label>
+              <div className="relative">
+                <DollarSign className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                <input 
+                  type="number" 
+                  required
+                  value={bidAmount}
+                  onChange={(e) => setBidAmount(e.target.value)}
+                  placeholder="EX: 500"
+                  className="w-full bg-slate-950 border border-slate-800 rounded-2xl pl-12 pr-6 py-4 text-sm font-bold outline-none focus:border-gold-500/50 transition-all italic"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <label className="text-[10px] font-black uppercase tracking-widest text-gold-500 ml-2">Delivery Time (Days)</label>
+              <div className="relative">
+                <Clock className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                <input 
+                  type="number" 
+                  required
+                  value={deliveryTime}
+                  onChange={(e) => setDeliveryTime(e.target.value)}
+                  placeholder="EX: 7"
+                  className="w-full bg-slate-950 border border-slate-800 rounded-2xl pl-12 pr-6 py-4 text-sm font-bold outline-none focus:border-gold-500/50 transition-all italic"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Cover Letter */}
+          <div className="space-y-3">
+            <label className="text-[10px] font-black uppercase tracking-widest text-gold-500 ml-2">Why should we hire you?</label>
+            <textarea 
+              required
+              value={coverLetter}
+              onChange={(e) => setCoverLetter(e.target.value)}
+              rows="6"
+              placeholder="DESCRIBE YOUR APPROACH AND RELEVANT EXPERIENCE..."
+              className="w-full bg-slate-950 border border-slate-800 rounded-[2rem] px-8 py-6 text-sm font-medium leading-relaxed outline-none focus:border-gold-500/50 transition-all italic"
+            ></textarea>
+            <p className="text-[9px] text-slate-600 italic uppercase tracking-tighter">
+              ⚠️ Pro Tip: Avoid sharing phone numbers or personal links to stay protected.
+            </p>
+          </div>
+
+          {error && (
+            <div className="flex items-center gap-3 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 text-[10px] font-black uppercase tracking-widest italic">
+              <AlertCircle className="w-4 h-4" /> {error}
+            </div>
+          )}
+
+          <button 
+            type="submit" 
+            disabled={loading}
+            className="w-full bg-gold-500 text-slate-950 py-5 rounded-2xl font-black uppercase tracking-[0.2em] text-xs hover:bg-white transition-all active:scale-95 shadow-xl shadow-gold-500/20 flex items-center justify-center gap-3"
+          >
+            {loading ? 'Processing...' : <><Send className="w-4 h-4" /> Submit Proposal</>}
+          </button>
+        </form>
+      </div>
     </div>
   );
 };
