@@ -1,84 +1,192 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
+import AddPortfolio from '../components/AddPortfolio'; // ይህ ኮምፖነንት እንዳለህ እርግጠኛ ሁን
 
 const Profile = () => {
-  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [isEditing, setIsEditing] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(false); // እዚህ ጋር መሆን አለበት
+  const [profile, setProfile] = useState({
+    full_name: '',
+    bio: '',
+    title: '',
+    skills: [],
+    avatar_url: ''
+  });
+  const [portfolios, setPortfolios] = useState([]);
 
   useEffect(() => {
-    const fetchUser = async () => {
-      const { data } = await supabase.auth.getUser();
-      setUser(data?.user);
-    };
-    fetchUser();
+    fetchProfileData();
   }, []);
 
+  const fetchProfileData = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      let { data: profileData } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+
+      if (profileData) setProfile(profileData);
+
+      let { data: portfolioData } = await supabase
+        .from('portfolios')
+        .select('*')
+        .eq('freelancer_id', user.id);
+
+      if (portfolioData) setPortfolios(portfolioData);
+    } catch (error) {
+      console.error('Error fetching profile:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSave = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    const { error } = await supabase
+      .from('profiles')
+      .update({
+        full_name: profile.full_name,
+        bio: profile.bio,
+        title: profile.title,
+        avatar_url: profile.avatar_url
+      })
+      .eq('id', user.id);
+
+    if (!error) {
+      setIsEditing(false);
+      alert("Profile Updated!");
+    } else {
+      alert("Error updating profile");
+    }
+  };
+
+  if (loading) return <div className="text-gold-500 text-center py-20 italic font-black uppercase tracking-widest">Loading Elite Profile...</div>;
+
   return (
-    <div className="max-w-6xl mx-auto px-6 py-20 min-h-screen">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+    <div className="max-w-6xl mx-auto px-6 py-12">
+      {/* Header Section */}
+      <div className="relative bg-slate-900/40 border border-slate-800 rounded-[3rem] p-8 md:p-12 backdrop-blur-xl mb-10 overflow-hidden">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-gold-500/5 blur-[80px] rounded-full"></div>
         
-        {/* Sidebar Info */}
-        <div className="lg:col-span-1 space-y-8">
-          <div className="bg-slate-900/40 border border-slate-800 p-10 rounded-[3rem] text-center">
-            <div className="w-32 h-32 bg-slate-800 rounded-full mx-auto mb-6 border-2 border-gold-500 flex items-center justify-center text-4xl font-black text-gold-500 italic uppercase">
-              {user?.user_metadata?.full_name?.charAt(0) || 'E'}
-            </div>
-            <h2 className="text-2xl font-black text-white italic uppercase tracking-tighter mb-2">
-              {user?.user_metadata?.full_name || 'Elite Member'}
-            </h2>
-            <p className="text-gold-500 text-[10px] font-black uppercase tracking-[0.2em] mb-6 italic">Verified Global Talent</p>
-            
-            <div className="flex justify-center gap-4 border-t border-slate-800 pt-6">
-               <div className="text-center">
-                 <p className="text-white font-black italic">0</p>
-                 <p className="text-[8px] text-slate-500 uppercase font-bold tracking-widest">Jobs Done</p>
-               </div>
-               <div className="h-8 w-px bg-slate-800"></div>
-               <div className="text-center">
-                 <p className="text-white font-black italic">0</p>
-                 <p className="text-[8px] text-slate-500 uppercase font-bold tracking-widest">Reviews</p>
-               </div>
+        <div className="flex flex-col md:flex-row items-center gap-8">
+          <div className="relative">
+            <div className="w-32 h-32 rounded-full border-2 border-gold-500 p-1">
+              <img 
+                src={profile.avatar_url || 'https://via.placeholder.com/150'} 
+                className="w-full h-full rounded-full object-cover grayscale hover:grayscale-0 transition-all shadow-2xl shadow-gold-500/20"
+                alt="Profile"
+              />
             </div>
           </div>
 
-          <div className="bg-slate-900/40 border border-slate-800 p-8 rounded-[2.5rem]">
-            <h4 className="text-white font-black uppercase text-[10px] tracking-widest mb-6 italic">Core Expertise</h4>
+          <div className="flex-1 text-center md:text-left">
+            {isEditing ? (
+              <div className="space-y-2">
+                <input 
+                  className="bg-slate-950 border border-gold-500/30 text-white text-2xl font-black italic rounded-lg px-2 w-full outline-none"
+                  value={profile.full_name}
+                  onChange={(e) => setProfile({...profile, full_name: e.target.value})}
+                  placeholder="Full Name"
+                />
+                <input 
+                  className="bg-slate-950 border border-slate-800 text-gold-500 text-sm italic rounded-lg px-2 w-full outline-none"
+                  value={profile.title}
+                  onChange={(e) => setProfile({...profile, title: e.target.value})}
+                  placeholder="Professional Title"
+                />
+              </div>
+            ) : (
+              <>
+                <h1 className="text-3xl md:text-4xl font-black text-white italic uppercase tracking-tighter">
+                  {profile.full_name || 'Elite Member'} 
+                  <span className="ml-3 text-[10px] bg-gold-500 text-slate-950 px-3 py-1 rounded-full not-italic tracking-widest align-middle">PRO</span>
+                </h1>
+                <p className="text-gold-500 font-medium italic mt-2">{profile.title || 'Professional Freelancer'}</p>
+              </>
+            )}
+          </div>
+
+          <div className="flex gap-4">
+            <button 
+              onClick={() => isEditing ? handleSave() : setIsEditing(true)}
+              className="border border-gold-500/50 text-gold-500 px-8 py-3 rounded-2xl font-black uppercase text-[10px] tracking-[0.2em] hover:bg-gold-500 hover:text-slate-950 transition-all"
+            >
+              {isEditing ? 'Save Profile' : 'Edit Profile'}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+        <div className="space-y-10">
+          <section className="bg-slate-900/20 border border-slate-800/50 rounded-[2rem] p-8">
+            <h3 className="text-white font-black italic uppercase text-xs tracking-widest mb-4">Biography</h3>
+            {isEditing ? (
+              <textarea 
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl p-4 text-slate-400 text-sm italic h-32 outline-none focus:border-gold-500/50"
+                value={profile.bio}
+                onChange={(e) => setProfile({...profile, bio: e.target.value})}
+              />
+            ) : (
+              <p className="text-slate-400 text-sm leading-relaxed italic">
+                {profile.bio || 'No biography added yet.'}
+              </p>
+            )}
+          </section>
+
+          <section className="bg-slate-900/20 border border-slate-800/50 rounded-[2rem] p-8">
+            <h3 className="text-white font-black italic uppercase text-xs tracking-widest mb-4">Elite Skills</h3>
             <div className="flex flex-wrap gap-2">
-              {['Digital Arts', 'Web Systems', 'Global Marketing'].map(skill => (
-                <span key={skill} className="bg-slate-950 border border-slate-800 px-4 py-2 rounded-xl text-[9px] font-black text-slate-400 uppercase tracking-widest italic">{skill}</span>
+              {profile.skills?.map((skill, index) => (
+                <span key={index} className="bg-slate-800 text-gold-500 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider border border-slate-700">
+                  {skill}
+                </span>
               ))}
             </div>
-          </div>
+          </section>
         </div>
 
-        {/* Main Content */}
-        <div className="lg:col-span-2 space-y-12">
-          {/* Portfolio Area */}
-          <div>
-            <div className="flex justify-between items-end mb-8">
-              <h3 className="text-3xl font-black italic text-white uppercase tracking-tighter leading-none">Featured <span className="text-gold-500">Portfolio</span></h3>
-              <button className="text-[10px] font-black uppercase tracking-widest text-gold-500 hover:text-white transition-all underline underline-offset-8">+ Upload Project</button>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="aspect-video bg-slate-900/50 border border-dashed border-slate-800 rounded-[2.5rem] flex items-center justify-center text-slate-700 hover:border-gold-500 transition-all cursor-pointer">
-                <p className="text-[10px] font-black uppercase tracking-widest italic tracking-[0.2em]">Add New Showcase</p>
+        <div className="lg:col-span-2">
+          <div className="flex justify-between items-center mb-8">
+            <h3 className="text-white font-black italic uppercase text-sm tracking-[0.3em]">Project Portfolio</h3>
+            <button 
+              onClick={() => setShowAddModal(true)}
+              className="text-gold-500 font-black text-[10px] uppercase tracking-widest border border-gold-500/20 px-4 py-2 rounded-xl hover:bg-gold-500 hover:text-slate-950 transition-all"
+            >
+              + Add Work
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {portfolios.map((item) => (
+              <div key={item.id} className="group relative overflow-hidden rounded-[2rem] border border-slate-800 bg-slate-900/40 p-2 transition-all hover:border-gold-500/50">
+                <div className="h-48 w-full rounded-[1.5rem] overflow-hidden bg-slate-950">
+                  <img src={item.image_url || 'https://via.placeholder.com/400x300'} alt={item.title} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" />
+                </div>
+                <div className="p-5">
+                  <h4 className="text-white font-black italic uppercase text-sm">{item.title}</h4>
+                  <p className="text-slate-500 text-[10px] mt-1 uppercase tracking-widest">{item.category}</p>
+                </div>
               </div>
-            </div>
-          </div>
-
-          {/* Work Experience Area */}
-          <div className="bg-slate-900/20 border border-slate-800 p-10 rounded-[3rem]">
-            <h3 className="text-xl font-black italic text-white uppercase tracking-tighter mb-8 italic leading-none">Global <span className="text-gold-500">Experience</span></h3>
-            <div className="space-y-8">
-               <div className="border-l-2 border-gold-500/20 pl-8 py-2">
-                  <p className="text-white font-black italic uppercase tracking-wider mb-1">Elite Freelancer</p>
-                  <p className="text-gold-500 text-[10px] font-black uppercase tracking-widest mb-4">Elite Works Platform • 2026 - Present</p>
-                  <p className="text-slate-500 text-sm italic leading-relaxed">Providing high-end digital services to global clients with a focus on quality and efficiency.</p>
-               </div>
-            </div>
+            ))}
           </div>
         </div>
-
       </div>
+
+      {/* Modal Section */}
+      {showAddModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/90 backdrop-blur-md p-4">
+          <div className="max-w-md w-full relative bg-slate-900 border border-slate-800 rounded-[2.5rem] p-8 shadow-2xl">
+            <button onClick={() => setShowAddModal(false)} className="absolute top-6 right-6 text-slate-500 hover:text-white transition-colors">✕</button>
+            <AddPortfolio onComplete={() => { setShowAddModal(false); fetchProfileData(); }} />
+          </div>
+        </div>
+      )}
     </div>
   );
 };

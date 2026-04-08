@@ -6,6 +6,7 @@ import { Elements } from '@stripe/react-stripe-js';
 // Components
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
+import ChatPopup from './components/ChatPopup';
 
 // Pages
 import Home from './pages/Home';
@@ -29,22 +30,23 @@ import ForgotPassword from './pages/ForgotPassword';
 import Wallet from './pages/Wallet';
 import Deposit from './pages/Deposit';
 import AdminDashboard from './pages/AdminDashboard';
-import LiveChat from './components/LiveChat';
 
-// Stripe Public Key - እዚህ ጋር የራስህን ቁልፍ አስገባ
+// አዲስ የተጨመሩ ገጾች (Imports)
+import PostProposal from './pages/PostProposal';
+import SANTIMShop from './pages/SANTIMShop';
+import ReviewProposals from './pages/ReviewProposals';
+
+// Stripe Public Key - እውነተኛውን Key እዚህ ጋር ማስገባትህን እርግጠኛ ሁን
 const stripePromise = loadStripe('pk_test_YourActualKeyHere'); 
 
 function App() {
   return (
     <Elements stripe={stripePromise}>
       <Router>
-        {/* በሁሉም ገጽ ላይ የሚታየው Navbar */}
-        <Navbar />
-        
-        {/* የላይቭ ቻት ኮምፖነንት */}
-        <LiveChat />
-
         <div className="pt-20 bg-slate-950 min-h-screen flex flex-col">
+          {/* Navigation */}
+          <Navbar />
+          
           <main className="flex-grow">
             <Routes>
               {/* General Routes */}
@@ -59,9 +61,12 @@ function App() {
               <Route path="/gigs" element={<Gigs />} />
               <Route path="/create-gig" element={<CreateGig />} />
 
-              {/* Jobs & Bids */}
+              {/* Jobs & Bids (Elite Bidding System) */}
               <Route path="/find-jobs" element={<FindJobs />} />
               <Route path="/post-job" element={<PostJob />} />
+              <Route path="/apply/:jobId" element={<PostProposal />} />
+              <Route path="/santim-shop" element={<SANTIMShop />} />
+              <Route path="/review-proposals/:jobId" element={<ReviewProposals />} />
               
               {/* User Specific & Finance */}
               <Route path="/dashboard" element={<Dashboard />} />
@@ -80,8 +85,14 @@ function App() {
             </Routes>
           </main>
 
-          {/* በሁሉም ገጽ ግርጌ የሚታየው Footer */}
+          {/* Footer */}
           <Footer />
+
+          {/* Global Chat Popup - ለ Elite Support የተቀመጠ */}
+          <ChatPopup 
+            receiverId="SUPPORT_ADMIN_ID" 
+            receiverName="Elite Support" 
+          />
         </div>
       </Router>
     </Elements>
