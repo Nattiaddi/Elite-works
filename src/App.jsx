@@ -30,8 +30,6 @@ import ForgotPassword from './pages/ForgotPassword';
 import Wallet from './pages/Wallet';
 import Deposit from './pages/Deposit';
 import AdminDashboard from './pages/AdminDashboard';
-
-// አዲስ የተጨመሩ ገጾች
 import JobDetail from './pages/JobDetail'; 
 import Messages from './pages/Messages'; 
 import PostProposal from './pages/PostProposal';
@@ -39,7 +37,7 @@ import SANTIMShop from './pages/SANTIMShop';
 import ReviewProposals from './pages/ReviewProposals';
 import JobDetails from './pages/JobDetails';
 import Freelancers from './pages/Freelancers';
-import ProfileUpdate from './pages/ProfileUpdate'; // ይሄ Import ተረስተው ነበር!
+import ProfileUpdate from './pages/ProfileUpdate';
 
 // Stripe Public Key
 const stripePromise = loadStripe('pk_test_YourActualKeyHere'); 
@@ -49,8 +47,10 @@ function App() {
     <Elements stripe={stripePromise}>
       <Router>
         <div className="bg-slate-950 min-h-screen flex flex-col">
+          {/* 1. NAVBAR (ከላይ ሁልጊዜ የሚታይ) */}
           <Navbar />
           
+          {/* 2. MAIN CONTENT (Routes) */}
           <main className="flex-grow">
             <Routes>
               {/* General Routes */}
@@ -96,6 +96,7 @@ function App() {
             </Routes>
           </main>
 
+          {/* 3. FOOTER (በሁሉም ገጾች ስር የሚታይ) */}
           <Footer />
 
           {/* Global Chat Popup */}
