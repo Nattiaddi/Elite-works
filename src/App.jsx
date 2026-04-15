@@ -31,15 +31,17 @@ import Wallet from './pages/Wallet';
 import Deposit from './pages/Deposit';
 import AdminDashboard from './pages/AdminDashboard';
 
-// አዲስ የተጨመሩ ገጾች (Imports)
-import JobDetail from './pages/JobDetail'; // ተጨምሯል
-import Messages from './pages/Messages'; // ተጨምሯል
+// አዲስ የተጨመሩ ገጾች
+import JobDetail from './pages/JobDetail'; 
+import Messages from './pages/Messages'; 
 import PostProposal from './pages/PostProposal';
 import SANTIMShop from './pages/SANTIMShop';
 import ReviewProposals from './pages/ReviewProposals';
 import JobDetails from './pages/JobDetails';
+import Freelancers from './pages/Freelancers';
+import ProfileUpdate from './pages/ProfileUpdate'; // ይሄ Import ተረስተው ነበር!
 
-// Stripe Public Key - እውነተኛውን Key እዚህ ጋር ማስገባትህን እርግጠኛ ሁን
+// Stripe Public Key
 const stripePromise = loadStripe('pk_test_YourActualKeyHere'); 
 
 function App() {
@@ -47,7 +49,6 @@ function App() {
     <Elements stripe={stripePromise}>
       <Router>
         <div className="bg-slate-950 min-h-screen flex flex-col">
-          {/* Navigation */}
           <Navbar />
           
           <main className="flex-grow">
@@ -61,15 +62,16 @@ function App() {
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/jobs/:id" element={<JobDetails />} />
               <Route path="/profile-update" element={<ProfileUpdate />} />
+              <Route path="/freelancers" element={<Freelancers />} />
               
               {/* Gigs & Services */}
               <Route path="/gigs" element={<Gigs />} />
               <Route path="/create-gig" element={<CreateGig />} />
 
-              {/* Jobs & Bids (Elite Bidding System) */}
+              {/* Jobs & Bids */}
               <Route path="/find-jobs" element={<FindJobs />} />
               <Route path="/post-job" element={<PostJob />} />
-              <Route path="/job/:id" element={<JobDetail />} /> {/* ID ራውት */}
+              <Route path="/job/:id" element={<JobDetail />} /> 
               <Route path="/apply/:jobId" element={<PostProposal />} />
               <Route path="/santim-shop" element={<SANTIMShop />} />
               <Route path="/review-proposals/:jobId" element={<ReviewProposals />} />
@@ -94,7 +96,6 @@ function App() {
             </Routes>
           </main>
 
-          {/* Footer */}
           <Footer />
 
           {/* Global Chat Popup */}
