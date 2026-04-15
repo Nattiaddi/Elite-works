@@ -16,8 +16,9 @@ const Navbar = () => {
       const { data: { user } } = await supabase.auth.getUser();
       setUser(user);
       if (user) {
-        const { data } = await supabase.from('profiles').select('role').eq('id', user.id).single();
-        setRole(data?.role);
+        // user_role የሚለውን ከዳታቤዝህ ጋር አንድ መሆኑን አረጋግጥ
+        const { data } = await supabase.from('profiles').select('user_role').eq('id', user.id).single();
+        setRole(data?.user_role);
         fetchNotifications(user.id);
       }
     };
@@ -32,7 +33,6 @@ const Navbar = () => {
       }
     });
 
-    // Real-time notifications
     const channel = supabase.channel('notifs').on('postgres_changes', 
       { event: 'INSERT', schema: 'public', table: 'notifications' }, 
       (payload) => { 
@@ -61,11 +61,7 @@ const Navbar = () => {
 
   const markAsRead = async () => {
     if (unreadCount === 0) return;
-    const { data: { user } } = await supabase.auth.getUser();
-    await supabase
-      .from('notifications')
-      .update({ is_read: true })
-      .eq('user_id', user.id);
+    await supabase.from('notifications').update({ is_read: true }).eq('user_id', user.id);
     setUnreadCount(0);
   };
 
@@ -91,12 +87,16 @@ const Navbar = () => {
         {/* Desktop Links */}
         <div className="hidden md:flex items-center gap-8">
           <Link to="/gigs" className="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-gold-500 transition-colors italic">Marketplace</Link>
-          {user && (
-            <Link 
-              to={role === 'client' ? "/post-job" : "/find-jobs"} 
-              className="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-gold-500 transition-colors italic border-l border-slate-800 pl-8"
-            >
-              {role === 'client' ? 'Post Job' : 'Find Work'}
+          
+          {user && role === 'freelancer' && (
+            <Link to="/find-jobs" className="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-gold-500 transition-colors italic border-l border-slate-800 pl-8">
+              Find Work
+            </Link>
+          )}
+
+          {user && role === 'client' && (
+            <Link to="/post-job" className="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-gold-500 transition-colors italic border-l border-slate-800 pl-8">
+              Post Job
             </Link>
           )}
         </div>
@@ -105,17 +105,12 @@ const Navbar = () => {
         <div className="flex items-center gap-5">
           {user ? (
             <>
-              {/* Message Icon */}
               <Link to="/messages" className="relative p-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-gold-500/50 transition-all group">
                 <Mail className="w-4 h-4 text-slate-400 group-hover:text-gold-500 transition-colors" />
               </Link>
 
-              {/* Notifications Icon & Dropdown */}
               <div className="relative">
-                <button 
-                  onClick={handleNotifClick}
-                  className="p-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-gold-500/50 transition-all group"
-                >
+                <button onClick={handleNotifClick} className="p-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-gold-500/50 transition-all group">
                   <Bell className="w-4 h-4 text-slate-400 group-hover:text-gold-500 transition-colors" />
                   {unreadCount > 0 && (
                     <span className="absolute top-2 right-2 w-1.5 h-1.5 bg-gold-500 rounded-full animate-pulse border border-slate-900"></span>
@@ -123,14 +118,14 @@ const Navbar = () => {
                 </button>
 
                 {showNotifs && (
-                  <div className="absolute right-0 mt-4 w-80 bg-slate-900 border border-white/10 rounded-2xl shadow-2xl p-4 backdrop-blur-xl animate-in fade-in slide-in-from-top-2">
+                  <div className="absolute right-0 mt-4 w-80 bg-slate-900 border border-white/10 rounded-2xl shadow-2xl p-4 backdrop-blur-xl z-50">
                     <h4 className="text-[10px] font-black uppercase tracking-widest text-gold-500 mb-4 border-b border-white/5 pb-2">Recent Updates</h4>
                     <div className="space-y-3">
                       {notifications.length === 0 ? (
                         <p className="text-[10px] text-slate-600 italic py-4 text-center font-bold">No new notifications.</p>
                       ) : (
                         notifications.map(n => (
-                          <div key={n.id} className="p-3 bg-white/5 rounded-xl border border-white/5 hover:border-gold-500/20 transition-all">
+                          <div key={n.id} className="p-3 bg-white/5 rounded-xl border border-white/5">
                             <p className="text-[11px] text-white font-medium italic">{n.message}</p>
                             <span className="text-[8px] text-slate-500 block mt-1 uppercase font-black">{new Date(n.created_at).toLocaleDateString()}</span>
                           </div>
@@ -141,23 +136,22 @@ const Navbar = () => {
                 )}
               </div>
 
-              {/* Profile Area */}
               <div className="flex items-center gap-3 bg-slate-900 border border-slate-800 p-1 rounded-2xl">
-                <Link to="/dashboard" className="p-2 hover:bg-slate-800 rounded-xl transition-colors text-slate-400 hover:text-gold-500" title="Dashboard">
+                <Link to="/dashboard" className="p-2 hover:bg-slate-800 rounded-xl transition-colors text-slate-400 hover:text-gold-500">
                   <LayoutDashboard className="w-4 h-4" />
                 </Link>
-                <Link to="/profile" className="w-8 h-8 bg-gold-500 text-slate-950 rounded-xl flex items-center justify-center font-black text-xs italic hover:scale-105 transition-transform">
+                <Link to="/profile" className="w-8 h-8 bg-gold-500 text-slate-950 rounded-xl flex items-center justify-center font-black text-xs italic">
                   {user.email?.charAt(0).toUpperCase()}
                 </Link>
-                <button onClick={handleLogout} className="p-2 hover:bg-red-500/10 rounded-xl transition-colors text-slate-400 hover:text-red-500" title="Logout">
+                <button onClick={handleLogout} className="p-2 hover:bg-red-500/10 rounded-xl transition-colors text-slate-400 hover:text-red-500">
                   <LogOut className="w-4 h-4" />
                 </button>
               </div>
             </>
           ) : (
             <div className="flex items-center gap-4">
-              <Link to="/login" className="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-white transition-colors">Login</Link>
-              <Link to="/signup" className="bg-gold-500 text-slate-950 px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-white transition-all shadow-lg shadow-gold-500/20">Join Elite</Link>
+              <Link to="/login" className="text-[10px] font-black uppercase tracking-widest text-slate-400">Login</Link>
+              <Link to="/signup" className="bg-gold-500 text-slate-950 px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest">Join Elite</Link>
             </div>
           )}
         </div>

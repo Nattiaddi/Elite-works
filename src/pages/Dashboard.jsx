@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { Link } from 'react-router-dom';
+import Footer from '../components/Footer'; // ፉተር መኖሩን አረጋግጥ
 import { 
   Home, Zap, Eye, Bookmark, Briefcase, ChevronRight,
   TrendingUp, PlusCircle, Clock, ExternalLink, CheckCircle2, User, 
   Settings, ShieldCheck, LogOut, Headset, HelpCircle
 } from 'lucide-react';
-import Footer from '../components/Footer';
 
 const Dashboard = () => {
   const [user, setUser] = useState(null);
@@ -72,22 +72,6 @@ const Dashboard = () => {
     fetchDashboardData();
   }, []);
 
-  const JobCard = ({ job, showZap = false }) => (
-    <div className="group bg-slate-900/40 border border-white/5 p-6 rounded-[2rem] hover:border-gold-500/30 transition-all backdrop-blur-md relative overflow-hidden">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div>
-          <h4 className="text-lg font-black italic uppercase tracking-tighter group-hover:text-gold-500 transition-colors flex items-center gap-2">
-            {job.title} {showZap && <Zap size={14} className="text-gold-500 fill-gold-500" />}
-          </h4>
-          <p className="text-slate-500 text-[10px] mt-1 italic uppercase tracking-widest">${job.budget} • {job.category || 'Elite Project'}</p>
-        </div>
-        <Link to={`/jobs/${job.id}`} className="shrink-0 bg-white/5 hover:bg-gold-500 hover:text-slate-950 p-3 rounded-xl transition-all">
-          <ExternalLink size={16} />
-        </Link>
-      </div>
-    </div>
-  );
-
   if (loading) return <div className="min-h-screen bg-slate-950 flex items-center justify-center font-black italic text-gold-500 animate-pulse tracking-widest uppercase text-xs">Syncing Terminal...</div>;
 
   return (
@@ -126,25 +110,33 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* 2. MAIN GRID (Sidebar + Content) */}
+      {/* 2. MAIN GRID */}
       <div className="max-w-7xl mx-auto px-6 mt-12 w-full flex-grow">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-10">
           
           {/* SIDEBAR */}
           <aside className="lg:col-span-1">
-            <div className="bg-slate-900/40 border border-white/5 rounded-[2.5rem] p-6 backdrop-blur-xl sticky top-32">
+            <div className="bg-white/5 border border-white/5 p-4 rounded-[2.5rem] backdrop-blur-md sticky top-32">
               <nav className="space-y-2">
                 {profile?.user_role === 'freelancer' ? (
                   navItems.map((item) => (
-                    <button key={item.id} onClick={() => setActiveTab(item.id)} className={`w-full flex items-center gap-4 px-5 py-4 rounded-2xl transition-all ${activeTab === item.id ? 'bg-gold-500 text-slate-950' : 'text-slate-400 hover:bg-white/5'}`}>
+                    <button 
+                      key={item.id} 
+                      onClick={() => setActiveTab(item.id)}
+                      className={`w-full flex items-center gap-4 px-6 py-4 rounded-2xl text-[10px] font-black uppercase italic tracking-widest transition-all ${activeTab === item.id ? 'bg-gold-500 text-slate-950 shadow-lg shadow-gold-500/20' : 'text-slate-500 hover:bg-white/5 hover:text-white'}`}
+                    >
                       <item.icon size={16} />
-                      <span className="text-[11px] font-black uppercase tracking-widest italic">{item.label}</span>
+                      <span>{item.label}</span>
                     </button>
                   ))
                 ) : (
                   <div className="space-y-4">
-                    <Link to="/post-job" className="flex items-center justify-center gap-2 bg-gold-500 text-slate-950 p-4 rounded-2xl font-black uppercase text-[10px] tracking-widest hover:scale-[1.02] transition-all"><PlusCircle size={16} /> Post New Job</Link>
-                    <button onClick={() => setActiveTab('Home')} className={`w-full flex items-center gap-4 px-5 py-4 rounded-2xl transition-all ${activeTab === 'Home' ? 'bg-white/10 text-white' : 'text-slate-400'}`}><Home size={16} /> <span className="text-[11px] font-black uppercase italic tracking-widest">Client Dashboard</span></button>
+                    <Link to="/post-job" className="w-full flex items-center gap-4 px-6 py-4 rounded-2xl text-[10px] font-black uppercase italic tracking-widest bg-gold-500 text-slate-950 shadow-lg shadow-gold-500/20 hover:scale-[1.02] transition-transform">
+                      <PlusCircle size={16} /> Post New Job
+                    </Link>
+                    <button onClick={() => setActiveTab('Home')} className={`w-full flex items-center gap-4 px-6 py-4 rounded-2xl text-[10px] font-black uppercase italic tracking-widest transition-all ${activeTab === 'Home' ? 'bg-white/10 text-gold-500' : 'text-slate-500 hover:bg-white/5 hover:text-white'}`}>
+                      <Home size={16} /> Client Dashboard
+                    </button>
                   </div>
                 )}
               </nav>
@@ -159,30 +151,35 @@ const Dashboard = () => {
                   <h3 className="text-2xl font-black italic mb-2 uppercase tracking-tighter">System Overview</h3>
                   <p className="text-slate-500 text-xs italic uppercase tracking-widest">Live Contracts: {activeProjects.length}</p>
                 </div>
+                
                 <div className="grid grid-cols-1 gap-4">
-                  {activeProjects.map(p => (
-                    <div key={p.id} className="bg-white/5 border border-white/5 p-6 rounded-3xl flex justify-between items-center group hover:border-gold-500/20">
-                      <div>
-                        <p className="text-gold-500 text-[10px] font-black uppercase italic tracking-widest">{p.jobs?.title}</p>
-                        <h4 className="text-xl font-black italic tracking-tighter">${p.amount}</h4>
-                      </div>
-                      <div className="flex items-center gap-4">
-                        <span className={`text-[9px] px-4 py-1.5 rounded-full uppercase font-black border ${p.status === 'completed' ? 'text-green-500' : 'text-gold-500'}`}>{p.status}</span>
-                        {profile?.user_role === 'client' && p.status === 'pending' && (
-                          <button onClick={() => handleReleasePayment(p.id, p.amount, p.freelancer_id)} className="bg-gold-500 text-slate-950 px-4 py-2 rounded-xl text-[9px] font-black uppercase italic hover:bg-white transition-all">Release Funds</button>
-                        )}
-                      </div>
+                  {activeProjects.length === 0 ? (
+                    <div className="text-center py-20 bg-white/5 rounded-[2rem] border border-dashed border-white/10">
+                      <p className="text-[10px] font-black uppercase italic text-slate-600 tracking-[0.2em]">No active contracts found in vault.</p>
                     </div>
-                  ))}
+                  ) : (
+                    activeProjects.map(p => (
+                      <div key={p.id} className="bg-white/5 border border-white/5 p-6 rounded-3xl flex justify-between items-center group hover:border-gold-500/20 transition-all">
+                        <div>
+                          <p className="text-gold-500 text-[10px] font-black uppercase italic tracking-widest">{p.jobs?.title}</p>
+                          <h4 className="text-xl font-black italic tracking-tighter">${p.amount}</h4>
+                        </div>
+                        <div className="flex items-center gap-4">
+                          <span className={`text-[9px] px-4 py-1.5 rounded-full uppercase font-black border ${p.status === 'completed' ? 'text-green-500 border-green-500/20 bg-green-500/5' : 'text-gold-500 border-gold-500/20 bg-gold-500/5'}`}>{p.status}</span>
+                          {profile?.user_role === 'client' && p.status === 'pending' && (
+                            <button onClick={() => handleReleasePayment(p.id, p.amount, p.freelancer_id)} className="bg-gold-500 text-slate-950 px-4 py-2 rounded-xl text-[9px] font-black uppercase italic hover:bg-white transition-all">Release Funds</button>
+                          )}
+                        </div>
+                      </div>
+                    ))
+                  )}
                 </div>
               </div>
             )}
-            {/* ... ሌሎች Tabs እዚህ ይቀጥላሉ (Recommended, Tracker ወዘተ) ... */}
           </main>
         </div>
       </div>
 
-      {/* 3. FOOTER (ሁልጊዜ ከስር) */}
       <Footer />
     </div>
   );
