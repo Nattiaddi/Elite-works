@@ -6,7 +6,7 @@ import {
   TrendingUp, PlusCircle, Clock, ExternalLink, CheckCircle2, User, 
   Settings, ShieldCheck, LogOut, Headset, HelpCircle
 } from 'lucide-react';
-import Footer from './Footer'; // Footer.jsx መኖሩን አረጋግጥ
+import Footer from './components/Footer'; // Footer.jsx መኖሩን አረጋግጥ
 
 const Dashboard = () => {
   const [user, setUser] = useState(null);
