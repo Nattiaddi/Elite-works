@@ -59,23 +59,25 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-slate-950 text-white pb-20">
       
-      {/* 1. PREMIUM HEADER SECTION */}
-      <div className="relative pt-32 pb-20 overflow-hidden px-6">
-        {/* Background Glow Effect */}
-        <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-gold-500/10 rounded-full blur-[120px] -translate-x-1/2 -translate-y-1/2 pointer-events-none"></div>
+      {/* 1. PREMIUM CENTERED HEADER SECTION */}
+      <div className="relative pt-32 pb-24 overflow-hidden px-6 text-center">
+        {/* Central Glow Effect */}
+        <div className="absolute top-0 left-1/2 w-[700px] h-[700px] bg-gold-500/10 rounded-full blur-[120px] -translate-x-1/2 -translate-y-1/2 pointer-events-none"></div>
         
         <div className="max-w-7xl mx-auto relative z-20">
-          <h1 className="text-6xl md:text-8xl font-black italic uppercase tracking-tighter leading-[0.85]">
-            <span className="text-white drop-shadow-2xl">WELCOME,</span> <br />
-            <span className="text-gold-500 drop-shadow-[0_0_30px_rgba(234,179,8,0.4)]">
-              {profile?.full_name?.split(' ')[0] || "ELITE"} {profile?.full_name?.split(' ')[1] || "USER"}
+          <h1 className="text-6xl md:text-9xl font-black italic uppercase tracking-tighter leading-[0.8] mb-8">
+            <span className="text-white drop-shadow-2xl opacity-90">WELCOME,</span> <br />
+            <span className="text-gold-500 drop-shadow-[0_0_50px_rgba(234,179,8,0.3)] inline-block mt-2">
+              {profile?.full_name || "ELITE USER"}
             </span>
           </h1>
-          <div className="flex items-center gap-4 mt-6">
-            <span className="h-[1px] w-12 bg-gold-500/50"></span>
-            <p className="text-slate-500 font-black uppercase text-[10px] tracking-[0.4em] italic">
+
+          <div className="flex items-center justify-center gap-6">
+            <span className="h-[1px] w-16 bg-gradient-to-r from-transparent to-gold-500/50"></span>
+            <p className="text-slate-500 font-black uppercase text-[10px] md:text-[12px] tracking-[0.6em] italic">
               {profile?.user_role === 'client' ? 'Elite Client Terminal' : 'Professional Talent Suite'}
             </p>
+            <span className="h-[1px] w-16 bg-gradient-to-l from-transparent to-gold-500/50"></span>
           </div>
         </div>
       </div>
@@ -84,25 +86,27 @@ const Dashboard = () => {
         
         {/* 2. STATS & WALLET INFO */}
         {profile?.user_role === 'freelancer' && (
-          <div className="mb-12 inline-flex items-center gap-6 bg-slate-900/40 border border-white/5 p-4 pr-8 rounded-[2rem] backdrop-blur-xl">
-             <div className="w-14 h-14 rounded-2xl bg-gold-500 flex items-center justify-center font-black text-slate-950 text-xl shadow-lg shadow-gold-500/20">ቀ</div>
-             <div>
-                <p className="text-slate-500 text-[9px] uppercase font-black italic tracking-widest">SANTIM Balance</p>
-                <h2 className="text-3xl font-black italic leading-none mt-1">{profile?.santim || 0}</h2>
-             </div>
-             <Link to="/santim-shop" className="ml-4 bg-white/5 hover:bg-gold-500 hover:text-slate-950 border border-white/10 px-5 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all">
-                Refill
-             </Link>
+          <div className="mb-16 flex justify-center">
+            <div className="inline-flex items-center gap-6 bg-slate-900/40 border border-white/5 p-4 pr-8 rounded-[2.5rem] backdrop-blur-xl shadow-2xl shadow-black/50">
+               <div className="w-14 h-14 rounded-2xl bg-gold-500 flex items-center justify-center font-black text-slate-950 text-xl shadow-lg shadow-gold-500/20">ቀ</div>
+               <div className="text-left">
+                  <p className="text-slate-500 text-[9px] uppercase font-black italic tracking-widest">SANTIM Balance</p>
+                  <h2 className="text-3xl font-black italic leading-none mt-1">{profile?.santim || 0}</h2>
+               </div>
+               <Link to="/santim-shop" className="ml-4 bg-white/5 hover:bg-gold-500 hover:text-slate-950 border border-white/10 px-5 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all">
+                  Refill
+               </Link>
+            </div>
           </div>
         )}
 
         {/* 3. CONTENT GRID */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           
-          {/* Left: Quick Actions & My Jobs */}
+          {/* Left: Quick Actions */}
           <div className="space-y-8">
             <div className="bg-slate-900/30 border border-white/5 p-8 rounded-[2.5rem] backdrop-blur-md">
-              <h3 className="text-gold-500 font-black italic mb-8 uppercase text-[10px] tracking-[0.3em]">Project Management</h3>
+              <h3 className="text-gold-500 font-black italic mb-8 uppercase text-[10px] tracking-[0.3em]">Management</h3>
               
               {profile?.user_role === 'client' ? (
                 <div className="space-y-6">
@@ -110,7 +114,7 @@ const Dashboard = () => {
                     Post New Job
                   </Link>
                   
-                  <div className="pt-6 border-t border-white/5 space-y-4">
+                  <div className="pt-6 border-t border-white/5 space-y-4 text-left">
                     <p className="text-slate-500 text-[9px] font-black uppercase italic">My Open Positions</p>
                     {myJobs.length === 0 ? (
                       <p className="text-[9px] text-slate-700 italic font-bold uppercase">No active job posts.</p>
@@ -118,10 +122,7 @@ const Dashboard = () => {
                       myJobs.map(job => (
                         <div key={job.id} className="bg-slate-950/50 p-4 rounded-2xl border border-white/5 flex justify-between items-center group hover:border-gold-500/30 transition-all">
                           <span className="text-[11px] font-black italic truncate max-w-[120px] uppercase tracking-tighter">{job.title}</span>
-                          <Link 
-                            to={`/review-proposals/${job.id}`}
-                            className="text-gold-500 text-[9px] font-black uppercase tracking-widest border border-gold-500/30 px-3 py-2 rounded-xl hover:bg-gold-500 hover:text-slate-950 transition-all"
-                          >
+                          <Link to={`/review-proposals/${job.id}`} className="text-gold-500 text-[9px] font-black uppercase tracking-widest border border-gold-500/30 px-3 py-2 rounded-xl hover:bg-gold-500 hover:text-slate-950 transition-all">
                             Proposals
                           </Link>
                         </div>
@@ -142,7 +143,7 @@ const Dashboard = () => {
           {/* Right: Escrow Status */}
           <div className="lg:col-span-2">
              <div className="bg-slate-900/30 border border-white/5 rounded-[2.5rem] p-8 backdrop-blur-md">
-                <h3 className="text-white font-black italic uppercase text-[10px] tracking-[0.3em] mb-10">Active Escrow Contracts</h3>
+                <h3 className="text-white font-black italic uppercase text-[10px] tracking-[0.3em] mb-10 text-left">Active Escrow Contracts</h3>
                 <div className="space-y-4">
                   {activeProjects.length === 0 ? (
                     <div className="py-20 text-center border border-dashed border-white/5 rounded-[2rem]">
@@ -151,16 +152,13 @@ const Dashboard = () => {
                   ) : (
                     activeProjects.map(project => (
                       <div key={project.id} className="bg-slate-950/50 border border-white/5 p-6 rounded-[2rem] flex justify-between items-center hover:border-gold-500/20 transition-all">
-                        <div>
+                        <div className="text-left">
                           <p className="text-gold-500 text-[9px] font-black uppercase mb-1 tracking-widest italic">{project.jobs?.title}</p>
                           <h4 className="text-2xl font-black italic tracking-tighter">${project.amount}</h4>
                           <span className="text-[8px] bg-white/5 text-slate-500 px-2 py-1 rounded-md uppercase font-black mt-2 inline-block">Status: {project.status}</span>
                         </div>
                         {profile?.user_role === 'client' && project.status === 'held' && (
-                          <button 
-                            onClick={() => handleReleasePayment(project.id)} 
-                            className="bg-gold-500 text-slate-950 px-8 py-3 rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-xl shadow-gold-500/10 hover:scale-105 transition-all"
-                          >
+                          <button onClick={() => handleReleasePayment(project.id)} className="bg-gold-500 text-slate-950 px-8 py-3 rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-xl shadow-gold-500/10 hover:scale-105 transition-all">
                             Release
                           </button>
                         )}
