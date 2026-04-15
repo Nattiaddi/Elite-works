@@ -37,6 +37,7 @@ import Messages from './pages/Messages'; // ተጨምሯል
 import PostProposal from './pages/PostProposal';
 import SANTIMShop from './pages/SANTIMShop';
 import ReviewProposals from './pages/ReviewProposals';
+import JobDetails from './pages/JobDetails';
 
 // Stripe Public Key - እውነተኛውን Key እዚህ ጋር ማስገባትህን እርግጠኛ ሁን
 const stripePromise = loadStripe('pk_test_YourActualKeyHere'); 
@@ -58,6 +59,8 @@ function App() {
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/jobs/:id" element={<JobDetails />} />
+              <Route path="/profile-update" element={<ProfileUpdate />} />
               
               {/* Gigs & Services */}
               <Route path="/gigs" element={<Gigs />} />
