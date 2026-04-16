@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { Link } from 'react-router-dom';
-import Footer from '../components/Footer';
 import { 
   Home, Zap, Eye, Bookmark, Briefcase, ChevronRight,
   TrendingUp, PlusCircle, Clock, ExternalLink, CheckCircle2, User, 
