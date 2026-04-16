@@ -1,11 +1,17 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { 
-  Headset, HelpCircle, ShieldCheck, Zap, Globe, 
+  Headset, ShieldCheck, Zap, Globe, 
   Twitter, Linkedin, Send 
 } from 'lucide-react';
 
 const Footer = () => {
+  const socialIcons = [
+    { Icon: Twitter, link: "#" },
+    { Icon: Linkedin, link: "#" },
+    { Icon: Send, link: "#" }
+  ];
+
   return (
     <footer className="mt-20 border-t border-white/5 bg-slate-950 relative overflow-hidden">
       
@@ -16,19 +22,19 @@ const Footer = () => {
             How EliteWorks Is <span className="text-gold-500">Different</span>
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12 max-w-5xl mx-auto">
-            <div className="p-6 bg-white/5 rounded-3xl border border-white/5">
-              <Zap className="text-gold-500 mx-auto mb-4" />
-              <h4 className="text-[10px] font-black uppercase italic text-white mb-2">Ultra Fast</h4>
+            <div className="p-8 bg-white/5 rounded-[2.5rem] border border-white/5 hover:border-gold-500/20 transition-all">
+              <Zap className="text-gold-500 mx-auto mb-4" size={32} />
+              <h4 className="text-[10px] font-black uppercase italic text-white mb-2 tracking-widest">Ultra Fast</h4>
               <p className="text-[9px] text-slate-500 uppercase font-bold italic">Instant Match & Fast Payouts.</p>
             </div>
-            <div className="p-6 bg-white/5 rounded-3xl border border-white/5">
-              <ShieldCheck className="text-gold-500 mx-auto mb-4" />
-              <h4 className="text-[10px] font-black uppercase italic text-white mb-2">Secure Escrow</h4>
+            <div className="p-8 bg-white/5 rounded-[2.5rem] border border-white/5 hover:border-gold-500/20 transition-all">
+              <ShieldCheck className="text-gold-500 mx-auto mb-4" size={32} />
+              <h4 className="text-[10px] font-black uppercase italic text-white mb-2 tracking-widest">Secure Escrow</h4>
               <p className="text-[9px] text-slate-500 uppercase font-bold italic">Protected Payments for every milestone.</p>
             </div>
-            <div className="p-6 bg-white/5 rounded-3xl border border-white/5">
-              <Globe className="text-gold-500 mx-auto mb-4" />
-              <h4 className="text-[10px] font-black uppercase italic text-white mb-2">Top 1% Talent</h4>
+            <div className="p-8 bg-white/5 rounded-[2.5rem] border border-white/5 hover:border-gold-500/20 transition-all">
+              <Globe className="text-gold-500 mx-auto mb-4" size={32} />
+              <h4 className="text-[10px] font-black uppercase italic text-white mb-2 tracking-widest">Top 1% Talent</h4>
               <p className="text-[9px] text-slate-500 uppercase font-bold italic">Only Vetted Professionals.</p>
             </div>
           </div>
@@ -47,23 +53,23 @@ const Footer = () => {
             Curating excellence for Ethiopia's most ambitious projects.
           </p>
           <div className="flex gap-3">
-            {[Twitter, Linkedin, Send].map((Icon, i) => (
-              <button key={i} className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-slate-400 hover:text-gold-500 border border-white/5 hover:border-gold-500/40 transition-all">
-                <Icon size={14} />
-              </button>
+            {socialIcons.map(({ Icon, link }, i) => (
+              <a key={i} href={link} className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-slate-400 hover:text-gold-500 border border-white/5 hover:border-gold-500/40 transition-all">
+                <Icon size={16} />
+              </a>
             ))}
           </div>
         </div>
 
-        {/* Governance - ጠፍቶ የነበረው */}
+        {/* Governance */}
         <div className="space-y-6">
           <div className="flex items-center gap-2 text-gold-500">
             <ShieldCheck size={16} />
             <h4 className="font-black italic uppercase tracking-widest text-[10px]">Governance</h4>
           </div>
           <ul className="space-y-3 text-[10px] font-black uppercase italic text-slate-500 tracking-widest">
-            <li className="hover:text-white transition-colors cursor-pointer">About EliteWorks</li>
-            <li className="hover:text-white transition-colors cursor-pointer">Verification Process</li>
+            <li><Link to="/about" className="hover:text-white transition-colors">About EliteWorks</Link></li>
+            <li><Link to="/verification" className="hover:text-white transition-colors">Verification Process</Link></li>
             <li><Link to="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link></li>
             <li><Link to="/terms" className="hover:text-white transition-colors">Terms of Service</Link></li>
           </ul>
@@ -78,7 +84,7 @@ const Footer = () => {
           <ul className="space-y-3 text-[10px] font-black uppercase italic text-slate-500 tracking-widest">
             <li><Link to="/help" className="hover:text-white transition-colors">Help Center</Link></li>
             <li><Link to="/support" className="hover:text-white transition-colors">Open Ticket</Link></li>
-            <li className="hover:text-white transition-colors cursor-pointer">Live Chat</li>
+            <li><Link to="/chat" className="hover:text-white transition-colors">Live Chat</Link></li>
           </ul>
         </div>
 
@@ -86,14 +92,20 @@ const Footer = () => {
         <div className="space-y-6">
           <h4 className="text-white font-black italic uppercase tracking-widest text-[10px]">Stay Elite</h4>
           <div className="relative">
-            <input type="email" placeholder="ENTER EMAIL" className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-[9px] font-black italic text-white focus:border-gold-500 outline-none uppercase tracking-widest"/>
-            <button className="absolute right-2 top-1/2 -translate-y-1/2 bg-gold-500 text-slate-950 px-3 py-1 rounded-lg font-black text-[9px] uppercase italic">Join</button>
+            <input 
+              type="email" 
+              placeholder="ENTER EMAIL" 
+              className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-[9px] font-black italic text-white focus:border-gold-500 outline-none uppercase tracking-widest"
+            />
+            <button className="absolute right-2 top-1/2 -translate-y-1/2 bg-gold-500 text-slate-950 px-4 py-2 rounded-xl font-black text-[9px] uppercase italic hover:bg-white transition-colors">
+              Join
+            </button>
           </div>
         </div>
       </div>
 
       {/* BOTTOM LEGAL BAR */}
-      <div className="max-w-7xl mx-auto px-6 py-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4">
+      <div className="max-w-7xl mx-auto px-6 py-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4 text-center md:text-left">
         <p className="text-[8px] text-slate-600 font-black uppercase tracking-[0.3em] italic">
           © 2026 ELITE WORKS CORP. BY KEDAMAWI
         </p>
