@@ -1,37 +1,33 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { Link } from 'react-router-dom';
+import Footer from '../components/Footer'; // ፋይሉ በ src/components/Footer.jsx መኖሩን አረጋግጥ
 import { 
-  Home, Zap, Eye, Bookmark, Briefcase, ChevronRight,
-  TrendingUp, PlusCircle, Clock, ExternalLink, CheckCircle2, User, 
-  Settings, ShieldCheck, LogOut, Headset, HelpCircle
+  Home, Zap, Eye, Bookmark, Briefcase, PlusCircle, ExternalLink, User, LogOut 
 } from 'lucide-react';
 
-// የሥራ ካርዶችን ለማሳየት የሚረዳ ንዑስ ኮድ (የተለየ ፋይል ካለህ እሱን ተጠቀም)
 const JobCard = ({ job, showZap }) => (
   <div className="bg-white/5 border border-white/5 p-6 rounded-3xl group hover:border-gold-500/20 transition-all">
     <div className="flex justify-between items-start mb-4">
       <div>
         {showZap && <span className="text-[8px] bg-gold-500 text-black px-2 py-0.5 rounded-full font-black uppercase italic mb-2 inline-block animate-pulse">Matched</span>}
-        <h4 className="text-xl font-black italic tracking-tighter uppercase">{job.title}</h4>
+        <h4 className="text-xl font-black italic tracking-tighter uppercase">{job?.title}</h4>
       </div>
-      <p className="text-gold-500 font-black italic">${job.budget}</p>
+      <p className="text-gold-500 font-black italic">${job?.budget}</p>
     </div>
     <div className="flex justify-between items-center">
-      <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">{job.category}</p>
-      <Link to={`/job/${job.id}`} className="text-white hover:text-gold-500 transition-colors"><ExternalLink size={16}/></Link>
+      <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">{job?.category}</p>
+      <Link to={`/job/${job?.id}`} className="text-white hover:text-gold-500 transition-colors"><ExternalLink size={16}/></Link>
     </div>
   </div>
 );
 
 const Dashboard = () => {
-  const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [activeTab, setActiveTab] = useState('Home');
   const [loading, setLoading] = useState(true);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
-  // Data States
   const [activeProjects, setActiveProjects] = useState([]);
   const [recommendedJobs, setRecommendedJobs] = useState([]);
   const [viewedJobs, setViewedJobs] = useState([]);
@@ -48,33 +44,46 @@ const Dashboard = () => {
 
   useEffect(() => {
     const fetchDashboardData = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-      setUser(user);
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          window.location.href = '/login';
+          return;
+        }
 
-      const { data: profileData } = await supabase.from('profiles').select('*').eq('id', user.id).single();
-      setProfile(profileData);
+        const { data: profileData } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+        setProfile(profileData);
 
-      if (profileData?.user_role === 'freelancer') {
-        // Recommended (By Skills)
-        const { data: rec } = await supabase.from('jobs').select('*').contains('required_skills', profileData.skills || []).limit(3);
-        setRecommendedJobs(rec || []);
+        if (profileData?.user_role === 'freelancer') {
+          // Skills Match
+          const { data: rec } = await supabase.from('jobs').select('*').contains('required_skills', profileData.skills || []).limit(4);
+          setRecommendedJobs(rec || []);
+          
+          // Interactions
+          const { data: interactions } = await supabase.from('job_interactions').select(`interaction_type, jobs (*)`).eq('user_id', user.id);
+          setViewedJobs(interactions?.filter(i => i.interaction_type === 'viewed').map(i => i.jobs).filter(Boolean) || []);
+          setSavedJobs(interactions?.filter(i => i.interaction_type === 'saved').map(i => i.jobs).filter(Boolean) || []);
+          
+          // Proposals
+          const { data: props } = await supabase.from('proposals').select(`*, jobs(title, budget)`).eq('freelancer_id', user.id);
+          setApplications(props || []);
+        }
+
+        // Simplified Escrow Query to prevent 400 error
+        const { data: escrow } = await supabase
+          .from('escrow')
+          .select(`id, amount, status, jobs(title)`)
+          .or(`client_id.eq.${user.id},freelancer_id.eq.${user.id}`);
         
-        // Interactions (Viewed/Saved)
-        const { data: interactions } = await supabase.from('job_interactions').select(`interaction_type, jobs (*)`).eq('user_id', user.id);
-        setViewedJobs(interactions?.filter(i => i.interaction_type === 'viewed').map(i => i.jobs).filter(Boolean) || []);
-        setSavedJobs(interactions?.filter(i => i.interaction_type === 'saved').map(i => i.jobs).filter(Boolean) || []);
-        
-        // Proposals
-        const { data: props } = await supabase.from('proposals').select(`*, jobs(title, budget)`).eq('freelancer_id', user.id);
-        setApplications(props || []);
+        setActiveProjects(escrow || []);
+
+      } catch (err) {
+        console.error("Critical Dashboard Error:", err);
+      } finally {
+        setLoading(false);
       }
-
-      // Escrow / Projects
-      const { data: escrow } = await supabase.from('escrow').select(`id, amount, status, freelancer_id, jobs (title), profiles!escrow_freelancer_id_fkey (full_name)`).or(`client_id.eq.${user.id},freelancer_id.eq.${user.id}`);
-      setActiveProjects(escrow || []);
-      setLoading(false);
     };
+
     fetchDashboardData();
   }, []);
 
@@ -93,7 +102,6 @@ const Dashboard = () => {
             <p className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-500 italic mt-2">Elite Works Pro Terminal</p>
           </div>
 
-          {/* PROFILE DROPDOWN */}
           <div className="relative">
             <button onClick={() => setIsDropdownOpen(!isDropdownOpen)} className="flex items-center gap-3 bg-white/5 p-2 pr-5 rounded-full border border-white/10 hover:border-gold-500/40 transition-all">
               <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-gold-600 to-gold-400 flex items-center justify-center font-black text-slate-950">{profile?.full_name?.charAt(0) || "U"}</div>
@@ -119,19 +127,13 @@ const Dashboard = () => {
       <div className="max-w-7xl mx-auto px-6 mt-12 w-full flex-grow">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-10">
           
-          {/* SIDEBAR */}
           <aside className="lg:col-span-1">
             <div className="bg-white/5 border border-white/5 p-4 rounded-[2.5rem] backdrop-blur-md sticky top-32">
               <nav className="space-y-2">
                 {profile?.user_role === 'freelancer' ? (
                   navItems.map((item) => (
-                    <button 
-                      key={item.id} 
-                      onClick={() => setActiveTab(item.id)}
-                      className={`w-full flex items-center gap-4 px-6 py-4 rounded-2xl text-[10px] font-black uppercase italic tracking-widest transition-all ${activeTab === item.id ? 'bg-gold-500 text-slate-950 shadow-lg' : 'text-slate-500 hover:text-white'}`}
-                    >
-                      <item.icon size={16} />
-                      <span>{item.label}</span>
+                    <button key={item.id} onClick={() => setActiveTab(item.id)} className={`w-full flex items-center gap-4 px-6 py-4 rounded-2xl text-[10px] font-black uppercase italic tracking-widest transition-all ${activeTab === item.id ? 'bg-gold-500 text-slate-950 shadow-lg' : 'text-slate-500 hover:text-white'}`}>
+                      <item.icon size={16} /> <span>{item.label}</span>
                     </button>
                   ))
                 ) : (
@@ -144,7 +146,6 @@ const Dashboard = () => {
             </div>
           </aside>
 
-          {/* DYNAMIC CONTENT AREA */}
           <main className="lg:col-span-3 space-y-8 pb-20">
             {activeTab === 'Home' && (
               <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4">
@@ -167,42 +168,35 @@ const Dashboard = () => {
             )}
 
             {activeTab === 'Recommended' && (
-              <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
+              <div className="grid grid-cols-1 gap-4 animate-in fade-in slide-in-from-bottom-4">
                 <h3 className="text-xl font-black italic uppercase tracking-tighter text-gold-500">AI Matched Projects</h3>
-                <div className="grid grid-cols-1 gap-4">
-                  {recommendedJobs.length > 0 ? recommendedJobs.map(job => <JobCard key={job.id} job={job} showZap={true} />) : <p className="text-slate-500 text-[10px] italic uppercase">Searching matches...</p>}
-                </div>
+                {recommendedJobs.length > 0 ? recommendedJobs.map(job => <JobCard key={job.id} job={job} showZap={true} />) : <p className="text-slate-500 text-[10px] italic">No matches found.</p>}
               </div>
             )}
 
             {(activeTab === 'Viewed' || activeTab === 'Saved') && (
-              <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
-                <h3 className="text-xl font-black italic uppercase tracking-tighter">{activeTab === 'Viewed' ? 'Recently Viewed' : 'Saved Vault'}</h3>
-                <div className="grid grid-cols-1 gap-4">
-                  {(activeTab === 'Viewed' ? viewedJobs : savedJobs).map(job => <JobCard key={job.id} job={job} />)}
-                </div>
+              <div className="grid grid-cols-1 gap-4 animate-in fade-in slide-in-from-bottom-4">
+                <h3 className="text-xl font-black italic uppercase tracking-tighter">{activeTab} Jobs</h3>
+                {(activeTab === 'Viewed' ? viewedJobs : savedJobs).map(job => <JobCard key={job.id} job={job} />)}
               </div>
             )}
 
             {activeTab === 'Tracker' && (
-              <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
-                <h3 className="text-xl font-black italic uppercase tracking-tighter text-gold-500">Proposal Pipeline</h3>
-                <div className="bg-white/5 border border-white/5 rounded-[2rem] overflow-hidden">
-                  <table className="w-full text-left text-[10px] font-black uppercase italic">
-                    <thead className="bg-white/5 text-slate-500 border-b border-white/5">
-                      <tr><th className="p-6">Project</th><th className="p-6">Bid</th><th className="p-6">Status</th></tr>
-                    </thead>
-                    <tbody className="divide-y divide-white/5">
-                      {applications.map(app => (
-                        <tr key={app.id} className="hover:bg-white/5 transition-colors">
-                          <td className="p-6 text-white">{app.jobs?.title}</td>
-                          <td className="p-6 text-gold-500">${app.bid_amount}</td>
-                          <td className="p-6"><span className="text-gold-500/80 border border-gold-500/20 px-3 py-1 rounded-full">{app.status}</span></td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+              <div className="bg-white/5 border border-white/5 rounded-[2rem] overflow-hidden">
+                <table className="w-full text-left text-[10px] font-black uppercase italic">
+                  <thead className="bg-white/5 text-slate-500 border-b border-white/5">
+                    <tr><th className="p-6">Project</th><th className="p-6">Bid</th><th className="p-6">Status</th></tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/5">
+                    {applications.map(app => (
+                      <tr key={app.id} className="hover:bg-white/5 transition-colors">
+                        <td className="p-6 text-white">{app.jobs?.title}</td>
+                        <td className="p-6 text-gold-500">${app.bid_amount}</td>
+                        <td className="p-6"><span className="text-gold-500/80 border border-gold-500/20 px-3 py-1 rounded-full">{app.status}</span></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             )}
           </main>
