@@ -1,45 +1,57 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
+import Sidebar from '../components/Sidebar';
 import { 
-  Zap, Bookmark, Send, ChevronLeft, 
-  DollarSign, Clock, ShieldCheck, Briefcase 
+  DollarSign, Clock, Tag, Send, 
+  ChevronLeft, ShieldCheck, AlertCircle, Bookmark 
 } from 'lucide-react';
 
 const JobDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [job, setJob] = useState(null);
+  const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isSaved, setIsSaved] = useState(false);
   const [bidAmount, setBidAmount] = useState('');
-  const [proposal, setProposal] = useState('');
+  const [coverLetter, setCoverLetter] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    const fetchJobAndInteraction = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+    const fetchJobAndUser = async () => {
+      // 1. Fetch Job Details
+      const { data: jobData } = await supabase
+        .from('jobs')
+        .select('*, profiles(full_name)')
+        .eq('id', id)
+        .single();
       
-      // 1. Fetch Job Data
-      const { data } = await supabase.from('jobs').select('*, profiles(full_name)').eq('id', id).single();
-      setJob(data);
+      setJob(jobData);
 
+      // 2. Fetch User Profile and Interaction
+      const { data: { user } } = await supabase.auth.getUser();
       if (user) {
-        // 2. Check if Saved
-        const { data: saved } = await supabase.from('job_interactions')
-          .underline().eq('job_id', id).eq('user_id', user.id).eq('interaction_type', 'saved').single();
-        if (saved) setIsSaved(true);
+        const { data: userData } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .single();
+        setProfile(userData);
 
-        // 3. Log as "Viewed" (Interaction)
-        await supabase.from('job_interactions').upsert({
-          user_id: user.id,
-          job_id: id,
-          interaction_type: 'viewed'
-        }, { onConflict: 'user_id, job_id, interaction_type' });
+        // Check if job is saved
+        const { data: saved } = await supabase
+          .from('job_interactions')
+          .select('*')
+          .eq('job_id', id)
+          .eq('user_id', user.id)
+          .eq('interaction_type', 'saved')
+          .single();
+        if (saved) setIsSaved(true);
       }
       setLoading(false);
     };
-    fetchJobAndInteraction();
+    fetchJobAndUser();
   }, [id]);
 
   const handleSave = async () => {
@@ -54,106 +66,6 @@ const JobDetails = () => {
       setIsSaved(true);
     }
   };
-
-  const handleApply = async (e) => {
-    e.preventDefault();
-    setSubmitting(true);
-    const { data: { user } } = await supabase.auth.getUser();
-
-    const { error } = await supabase.from('proposals').insert({
-      job_id: id,
-      freelancer_id: user.id,
-      bid_amount: bidAmount,
-      cover_letter: proposal,
-      status: 'pending'
-    });
-
-    if (error) alert(error.message);
-    else {
-      alert("Proposal sent successfully!");
-      navigate('/dashboard');
-    }
-    setSubmitting(false);
-  };
-
-  if (loading) return <div className="min-h-screen bg-slate-950 flex items-center justify-center text-gold-500 font-black italic animate-pulse">LOADING PROJECT...</div>;
-
-  return (
-    <div className="min-h-screen bg-slate-950 text-white pb-20 pt-32 px-6 font-sans">
-      <div className="max-w-5xl mx-auto">
-        
-        {/* Back Button */}
-        <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-slate-500 hover:text-gold-500 transition-colors text-[10px] font-black uppercase tracking-widest mb-10 italic">
-          <ChevronLeft size={16} /> Back to Terminal
-        </button>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-          
-          {/* Main Content */}
-          <div className="lg:col-span-2 space-y-10">
-            <div className="space-y-4">
-              <div className="flex items-center gap-3">
-                <span className="bg-gold-500/10 text-gold-500 px-3 py-1 rounded-md text-[9px] font-black uppercase tracking-tighter border border-gold-500/20">{job.category}</span>
-                <span className="text-slate-500 text-[9px] font-black uppercase italic tracking-widest">Posted by {job.profiles?.full_name}</span>
-              </div>
-              <h1 className="text-4xl md:text-5xl font-black italic uppercase tracking-tighter leading-none">{job.title}</h1>
-            </div>
-
-            <div className="bg-white/5 border border-white/5 p-8 rounded-[2.5rem] backdrop-blur-xl">
-              <h3 className="text-gold-500 text-[10px] font-black uppercase italic tracking-widest mb-4">Project Brief</h3>
-              <p className="text-slate-400 leading-relaxed italic text-sm">{job.description}</p>
-              
-              <div className="mt-8 flex flex-wrap gap-2">
-                {job.required_skills?.map(skill => (
-                  <span key={skill} className="bg-white/5 px-4 py-2 rounded-xl text-[10px] font-black uppercase italic border border-white/5 tracking-widest text-slate-300">{skill}</span>
-                ))}
-              </div>
-            </div>
-          </div>
-          import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { supabase } from '../lib/supabaseClient';
-import Sidebar from '../components/Sidebar';
-import { 
-  DollarSign, Clock, Tag, User, Send, 
-  ChevronLeft, ShieldCheck, AlertCircle 
-} from 'lucide-react';
-
-const JobDetails = () => {
-  const { id } = useParams();
-  const navigate = useNavigate();
-  const [job, setJob] = useState(null);
-  const [profile, setProfile] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [bidAmount, setBidAmount] = useState('');
-  const [coverLetter, setCoverLetter] = useState('');
-  const [submitting, setSubmitting] = useState(false);
-
-  useEffect(() => {
-    const fetchJobAndUser = async () => {
-      // 1. የስራውን ዝርዝር አምጣ
-      const { data: jobData } = await supabase
-        .from('jobs')
-        .select('*, profiles(full_name)')
-        .eq('id', id)
-        .single();
-      
-      setJob(jobData);
-
-      // 2. የተጠቃሚውን መረጃ አምጣ
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { data: userData } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', user.id)
-          .single();
-        setProfile(userData);
-      }
-      setLoading(false);
-    };
-    fetchJobAndUser();
-  }, [id]);
 
   const handleSubmitProposal = async (e) => {
     e.preventDefault();
@@ -189,11 +101,10 @@ const JobDetails = () => {
   );
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white flex">
+    <div className="min-h-screen bg-slate-950 text-white flex font-sans">
       <Sidebar />
 
       <div className="flex-1 flex flex-col min-h-screen overflow-y-auto pb-20">
-        {/* Header */}
         <header className="pt-24 pb-12 px-10">
           <button 
             onClick={() => navigate(-1)}
@@ -203,7 +114,7 @@ const JobDetails = () => {
           </button>
           
           <div className="max-w-5xl">
-            <h1 className="text-4xl md:text-6xl font-black italic uppercase tracking-tighter leading-tight">
+            <h1 className="text-4xl md:text-6xl font-black italic uppercase tracking-tighter leading-tight text-white">
               {job?.title}
             </h1>
             <div className="flex flex-wrap gap-6 mt-6 items-center">
@@ -222,23 +133,21 @@ const JobDetails = () => {
         </header>
 
         <main className="px-10 grid grid-cols-1 lg:grid-cols-3 gap-12 max-w-7xl">
-          {/* Details Section */}
           <div className="lg:col-span-2 space-y-10">
             <div className="bg-white/5 border border-white/5 p-10 rounded-[3rem] backdrop-blur-md relative overflow-hidden">
                <div className="absolute top-0 right-0 w-32 h-32 bg-gold-500/5 blur-3xl"></div>
-               <h3 className="text-xs font-black uppercase tracking-[0.3em] text-gold-500 italic mb-6">Project Brief</h3>
-               <p className="text-slate-300 text-lg leading-relaxed italic font-medium whitespace-pre-wrap">
+               <h3 className="text-xs font-black uppercase tracking-[0.3em] text-gold-500 italic mb-6 text-left">Project Brief</h3>
+               <p className="text-slate-300 text-lg leading-relaxed italic font-medium whitespace-pre-wrap text-left">
                  {job?.description}
                </p>
             </div>
 
-            {/* Client Info Summary */}
             <div className="bg-slate-900/40 border border-white/5 p-8 rounded-[2.5rem] flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center font-black italic text-gold-500">
                   {job?.profiles?.full_name?.charAt(0)}
                 </div>
-                <div>
+                <div className="text-left">
                   <p className="text-[8px] font-black uppercase text-slate-500 tracking-widest leading-none">Posted By</p>
                   <h4 className="text-white font-black italic uppercase mt-1">{job?.profiles?.full_name}</h4>
                 </div>
@@ -250,31 +159,24 @@ const JobDetails = () => {
             </div>
           </div>
 
-          {/* Proposal Form Section */}
           <aside className="lg:col-span-1">
             <div className="bg-white/5 border border-white/5 p-8 rounded-[3rem] sticky top-32 backdrop-blur-xl border-t-gold-500/20 shadow-2xl">
-              <h3 className="text-xl font-black italic uppercase tracking-tight mb-8">Send Proposal</h3>
+              <h3 className="text-xl font-black italic uppercase tracking-tight mb-8 text-left text-white">Send Proposal</h3>
               
               <form onSubmit={handleSubmitProposal} className="space-y-6">
-                <div className="space-y-2">
+                <div className="space-y-2 text-left">
                   <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-2">Your Bid ($)</label>
                   <input 
-                    type="number" 
-                    required
-                    placeholder="Enter amount"
-                    value={bidAmount}
+                    type="number" required placeholder="Enter amount" value={bidAmount}
                     onChange={(e) => setBidAmount(e.target.value)}
                     className="w-full bg-slate-950/50 border border-white/10 rounded-2xl px-6 py-4 text-white focus:border-gold-500 outline-none transition-all font-black italic"
                   />
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-2 text-left">
                   <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-2">Cover Letter</label>
                   <textarea 
-                    rows="5"
-                    required
-                    placeholder="Why are you the best fit for this project?"
-                    value={coverLetter}
+                    rows="5" required placeholder="Why are you the best fit?" value={coverLetter}
                     onChange={(e) => setCoverLetter(e.target.value)}
                     className="w-full bg-slate-950/50 border border-white/10 rounded-3xl px-6 py-4 text-sm text-slate-300 focus:border-gold-500 outline-none transition-all italic leading-relaxed"
                   />
@@ -283,11 +185,16 @@ const JobDetails = () => {
                 <button 
                   type="submit"
                   disabled={submitting || profile?.user_role !== 'freelancer'}
-                  className="w-full bg-gold-500 text-slate-950 font-black uppercase italic py-5 rounded-2xl flex items-center justify-center gap-3 hover:bg-white transition-all shadow-[0_20px_40px_rgba(212,175,55,0.1)] disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full bg-gold-500 text-slate-950 font-black uppercase italic py-5 rounded-2xl flex items-center justify-center gap-3 hover:bg-white transition-all shadow-xl disabled:opacity-50"
                 >
-                  {submitting ? 'Sending...' : (
-                    <>Submit Proposal <Send size={18} /></>
-                  )}
+                  {submitting ? 'Sending...' : <><Send size={18} /> Submit Proposal</>}
+                </button>
+
+                <button 
+                  type="button" onClick={handleSave}
+                  className={`w-full flex items-center justify-center gap-2 p-5 rounded-2xl font-black uppercase italic text-[11px] tracking-widest border transition-all ${isSaved ? 'bg-white/10 border-white/20 text-white' : 'border-white/5 text-slate-500 hover:text-white'}`}
+                >
+                  <Bookmark size={16} fill={isSaved ? "currentColor" : "none"} /> {isSaved ? 'Saved' : 'Save for Later'}
                 </button>
 
                 {profile?.user_role !== 'freelancer' && (
@@ -299,40 +206,6 @@ const JobDetails = () => {
             </div>
           </aside>
         </main>
-      </div>
-    </div>
-
-          {/* Action Sidebar */}
-          <div className="lg:col-span-1 space-y-6">
-            <div className="bg-slate-900/40 border border-white/5 p-8 rounded-[2.5rem] backdrop-blur-xl sticky top-32">
-              <div className="mb-8">
-                <p className="text-slate-500 text-[10px] font-black uppercase italic tracking-widest mb-1">Project Budget</p>
-                <h2 className="text-4xl font-black italic text-gold-500 tracking-tighter">${job.budget}</h2>
-              </div>
-
-              <form onSubmit={handleApply} className="space-y-4">
-                <div className="space-y-2">
-                  <label className="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-2 italic italic">Your Bid ($)</label>
-                  <input type="number" required value={bidAmount} onChange={(e) => setBidAmount(e.target.value)} placeholder="0.00" 
-                    className="w-full bg-slate-950 border border-white/10 rounded-2xl p-4 text-sm font-black italic focus:border-gold-500/50 transition-all outline-none" />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-2 italic">Proposal Details</label>
-                  <textarea required value={proposal} onChange={(e) => setProposal(e.target.value)} placeholder="Why are you the best fit?" rows="4"
-                    className="w-full bg-slate-950 border border-white/10 rounded-2xl p-4 text-xs font-medium italic focus:border-gold-500/50 transition-all outline-none resize-none" />
-                </div>
-                <button type="submit" disabled={submitting} className="w-full bg-gold-500 text-slate-950 p-5 rounded-2xl font-black uppercase italic text-[11px] tracking-widest hover:scale-[1.02] transition-all shadow-xl shadow-gold-500/20 flex items-center justify-center gap-2">
-                  {submitting ? 'SENDING...' : <><Send size={16}/> Apply Now</>}
-                </button>
-              </form>
-
-              <button onClick={handleSave} className={`w-full mt-4 flex items-center justify-center gap-2 p-5 rounded-2xl font-black uppercase italic text-[11px] tracking-widest border transition-all ${isSaved ? 'bg-white/10 border-white/20 text-white' : 'border-white/5 text-slate-500 hover:text-white'}`}>
-                <Bookmark size={16} fill={isSaved ? "currentColor" : "none"} /> {isSaved ? 'Saved' : 'Save for Later'}
-              </button>
-            </div>
-          </div>
-
-        </div>
       </div>
     </div>
   );
