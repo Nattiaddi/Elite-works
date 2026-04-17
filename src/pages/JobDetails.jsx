@@ -4,7 +4,8 @@ import { supabase } from '../lib/supabaseClient';
 import Sidebar from '../components/Sidebar';
 import { 
   DollarSign, Clock, Tag, Send, 
-  ChevronLeft, ShieldCheck, AlertCircle, Bookmark 
+  ChevronLeft, ShieldCheck, AlertCircle, Bookmark,
+  MessageSquare // <--- ይቺን ጨምር
 } from 'lucide-react';
 
 const JobDetails = () => {
