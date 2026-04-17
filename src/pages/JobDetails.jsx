@@ -5,7 +5,7 @@ import Sidebar from '../components/Sidebar';
 import { 
   DollarSign, Clock, Tag, Send, 
   ChevronLeft, ShieldCheck, AlertCircle, Bookmark,
-  MessageSquare // <--- ይቺን ጨምር
+  MessageSquare
 } from 'lucide-react';
 
 const JobDetails = () => {
@@ -21,36 +21,41 @@ const JobDetails = () => {
 
   useEffect(() => {
     const fetchJobAndUser = async () => {
-      // 1. Fetch Job Details
-      const { data: jobData } = await supabase
-        .from('jobs')
-        .select('*, profiles(full_name)')
-        .eq('id', id)
-        .single();
-      
-      setJob(jobData);
+      try {
+        // 1. Fetch Job Details
+        const { data: jobData } = await supabase
+          .from('jobs')
+          .select('*, profiles(full_name)')
+          .eq('id', id)
+          .maybeSingle();
+        
+        setJob(jobData);
 
-      // 2. Fetch User Profile and Interaction
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { data: userData } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', user.id)
-          .single();
-        setProfile(userData);
+        // 2. Fetch User Profile
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data: userData } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', user.id)
+            .maybeSingle();
+          setProfile(userData);
 
-        // Check if job is saved
-        const { data: saved } = await supabase
-          .from('job_interactions')
-          .select('*')
-          .eq('job_id', id)
-          .eq('user_id', user.id)
-          .eq('interaction_type', 'saved')
-          .single();
-        if (saved) setIsSaved(true);
+          // Check if job is saved
+          const { data: saved } = await supabase
+            .from('job_interactions')
+            .select('*')
+            .eq('job_id', id)
+            .eq('user_id', user.id)
+            .eq('interaction_type', 'saved')
+            .maybeSingle();
+          if (saved) setIsSaved(true);
+        }
+      } catch (error) {
+        console.error("Error fetching details:", error);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
     fetchJobAndUser();
   }, [id]);
@@ -104,7 +109,6 @@ const JobDetails = () => {
   return (
     <div className="min-h-screen bg-slate-950 text-white flex font-sans">
       <Sidebar />
-
       <div className="flex-1 flex flex-col min-h-screen overflow-y-auto pb-20">
         <header className="pt-24 pb-12 px-10">
           <button 
@@ -114,7 +118,7 @@ const JobDetails = () => {
             <ChevronLeft size={14} /> Back to Market
           </button>
           
-          <div className="max-w-5xl">
+          <div className="max-w-5xl text-left">
             <h1 className="text-4xl md:text-6xl font-black italic uppercase tracking-tighter leading-tight text-white">
               {job?.title}
             </h1>
@@ -127,7 +131,7 @@ const JobDetails = () => {
                 <Tag size={14} /> {job?.category}
               </div>
               <div className="flex items-center gap-2 text-slate-500 text-[10px] font-black uppercase italic tracking-widest">
-                <Clock size={14} /> {new Date(job?.created_at).toLocaleDateString()}
+                <Clock size={14} /> {job?.created_at ? new Date(job.created_at).toLocaleDateString() : ''}
               </div>
             </div>
           </div>
@@ -163,7 +167,6 @@ const JobDetails = () => {
           <aside className="lg:col-span-1">
             <div className="bg-white/5 border border-white/5 p-8 rounded-[3rem] sticky top-32 backdrop-blur-xl border-t-gold-500/20 shadow-2xl">
               <h3 className="text-xl font-black italic uppercase tracking-tight mb-8 text-left text-white">Send Proposal</h3>
-              
               <form onSubmit={handleSubmitProposal} className="space-y-6">
                 <div className="space-y-2 text-left">
                   <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-2">Your Bid ($)</label>
@@ -173,7 +176,6 @@ const JobDetails = () => {
                     className="w-full bg-slate-950/50 border border-white/10 rounded-2xl px-6 py-4 text-white focus:border-gold-500 outline-none transition-all font-black italic"
                   />
                 </div>
-
                 <div className="space-y-2 text-left">
                   <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-2">Cover Letter</label>
                   <textarea 
@@ -182,7 +184,6 @@ const JobDetails = () => {
                     className="w-full bg-slate-950/50 border border-white/10 rounded-3xl px-6 py-4 text-sm text-slate-300 focus:border-gold-500 outline-none transition-all italic leading-relaxed"
                   />
                 </div>
-
                 <button 
                   type="submit"
                   disabled={submitting || profile?.user_role !== 'freelancer'}
@@ -190,14 +191,12 @@ const JobDetails = () => {
                 >
                   {submitting ? 'Sending...' : <><Send size={18} /> Submit Proposal</>}
                 </button>
-
                 <button 
                   type="button" onClick={handleSave}
                   className={`w-full flex items-center justify-center gap-2 p-5 rounded-2xl font-black uppercase italic text-[11px] tracking-widest border transition-all ${isSaved ? 'bg-white/10 border-white/20 text-white' : 'border-white/5 text-slate-500 hover:text-white'}`}
                 >
                   <Bookmark size={16} fill={isSaved ? "currentColor" : "none"} /> {isSaved ? 'Saved' : 'Save for Later'}
                 </button>
-
                 {profile?.user_role !== 'freelancer' && (
                   <p className="flex items-center gap-2 text-red-500 text-[9px] font-black uppercase tracking-tighter italic mt-4 text-center">
                     <AlertCircle size={14} /> Only Freelancer accounts can apply.

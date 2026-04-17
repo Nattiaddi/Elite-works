@@ -8,7 +8,7 @@ import {
   PlusCircle, 
   User, 
   MessageSquare,
-  ShieldAlert, // አዲስ የተጨመረ
+  ShieldAlert,
   Wallet
 } from 'lucide-react';
 
@@ -24,28 +24,25 @@ const Sidebar = () => {
           .from('profiles')
           .select('*')
           .eq('id', user.id)
-          .single();
+          .maybeSingle();
         setProfile(data);
       }
     };
     fetchProfile();
   }, []);
 
-  // 1. ዋና የሜኑ ዝርዝር
   const menuItems = [
     { name: 'Dashboard', icon: LayoutDashboard, path: '/dashboard' },
     { name: 'Manage Projects', icon: Briefcase, path: '/manage-projects' },
     { name: 'Messages', icon: MessageSquare, path: '/messages' },
-    { name: 'Wallet', icon: Wallet, path: '/wallet' }, // Wallet እዚህ ተጨምሯል
+    { name: 'Wallet', icon: Wallet, path: '/wallet' },
     { name: 'My Profile', icon: User, path: '/profile' },
   ];
 
-  // 2. እንደ ተጠቃሚው ሮል (Role) የሚታዩ ሊንኮች
   const roleLinks = profile?.user_role === 'client' 
     ? [{ name: 'Post a Job', icon: PlusCircle, path: '/post-job' }]
     : [{ name: 'Find Work', icon: Search, path: '/find-jobs' }];
 
-  // 3. ለአድሚን ብቻ የሚታይ ሊንክ
   const adminLinks = profile?.user_role === 'admin' 
     ? [{ name: 'Admin Command', icon: ShieldAlert, path: '/admin-command' }] 
     : [];
@@ -54,13 +51,11 @@ const Sidebar = () => {
 
   return (
     <aside className="w-64 min-h-screen bg-slate-950 border-r border-white/5 p-6 hidden lg:flex flex-col sticky top-0">
-      
-      <div className="mb-12 px-2">
+      <div className="mb-12 px-2 text-left">
         <h2 className="text-xs font-black uppercase tracking-[0.3em] text-slate-500 italic">Menu</h2>
       </div>
 
       <nav className="flex-grow space-y-2">
-        {/* Core Menu */}
         {menuItems.map((item) => (
           <Link
             key={item.name}
@@ -76,10 +71,9 @@ const Sidebar = () => {
           </Link>
         ))}
 
-        {/* --- ADMIN SECTION (ካለ ብቻ ይታያል) --- */}
         {adminLinks.length > 0 && (
           <div className="mt-8 pt-6 border-t border-white/5">
-            <h2 className="text-[9px] font-black uppercase tracking-[0.3em] text-red-500 italic mb-4 px-2">Control</h2>
+            <h2 className="text-[9px] font-black uppercase tracking-[0.3em] text-red-500 italic mb-4 px-2 text-left">Control</h2>
             {adminLinks.map((item) => (
               <Link
                 key={item.name}
@@ -97,9 +91,8 @@ const Sidebar = () => {
           </div>
         )}
 
-        {/* Action Section */}
         <div className="mt-8 pt-6 border-t border-white/5">
-          <h2 className="text-[9px] font-black uppercase tracking-[0.3em] text-slate-600 italic mb-4 px-2">Action</h2>
+          <h2 className="text-[9px] font-black uppercase tracking-[0.3em] text-slate-600 italic mb-4 px-2 text-left">Action</h2>
           {roleLinks.map((item) => (
             <Link
               key={item.name}
@@ -117,9 +110,8 @@ const Sidebar = () => {
         </div>
       </nav>
 
-      {/* Profile Card */}
       <div className="mt-auto bg-white/5 rounded-[2rem] p-4 border border-white/5">
-        <div className="flex items-center gap-3 mb-3">
+        <div className="flex items-center gap-3 mb-3 text-left">
           <div className="w-8 h-8 rounded-lg bg-gold-500 flex items-center justify-center text-slate-950 font-black text-xs">
             {profile?.full_name?.charAt(0) || 'E'}
           </div>
