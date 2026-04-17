@@ -13,7 +13,7 @@ const PaymentGateway = ({ amount, userProfile }) => {
     form.action = 'https://api.chapa.co/v1/transaction/initialize';
 
     const fields = {
-      'public_key': CHAPUBK_TEST-0fH9OsaazSUFelVaUEKarX5yj7luxMS5, // የ Chapa Public Key እዚህ ይተኩ
+      'public_key': 'CHAPAPUBK_TEST-0fH9OsaazSUFelVaUEKarX5yj7luxMS5', // የ Chapa Public Key እዚህ ይተኩ
       'amount': amount.toString(),
       'currency': 'ETB',
       'email': userProfile?.email || 'customer@gmail.com',
