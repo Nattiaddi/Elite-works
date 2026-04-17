@@ -1,7 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { useNavigate } from 'react-router-dom';
-import { User, Mail, Code, FileText, Save, CheckCircle2, ArrowLeft } from 'lucide-react';
+import Sidebar from '../components/Sidebar';
+import { 
+  User, Mail, Briefcase, Award, Save, 
+  Camera, ShieldCheck, Banknote, CheckCircle 
+} from 'lucide-react';
 
 const ProfileUpdate = () => {
   const navigate = useNavigate();
@@ -11,35 +15,29 @@ const ProfileUpdate = () => {
     full_name: '',
     bio: '',
     skills: [],
-    user_role: ''
+    user_role: '',
+    bank_details: '',
   });
-  
-  const [skillInput, setSkillInput] = useState('');
 
   useEffect(() => {
+    const fetchProfile = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        navigate('/login');
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+
+      if (data) setProfile(data);
+      setLoading(false);
+    };
     fetchProfile();
-  }, []);
-
-  const fetchProfile = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return navigate('/login');
-
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', user.id)
-      .single();
-
-    if (data) {
-      setProfile({
-        full_name: data.full_name || '',
-        bio: data.bio || '',
-        skills: data.skills || [],
-        user_role: data.user_role || ''
-      });
-    }
-    setLoading(false);
-  };
+  }, [navigate]);
 
   const handleUpdate = async (e) => {
     e.preventDefault();
@@ -48,135 +46,130 @@ const ProfileUpdate = () => {
 
     const { error } = await supabase
       .from('profiles')
-      .update({
-        full_name: profile.full_name,
-        bio: profile.bio,
-        skills: profile.skills,
-        updated_at: new Date()
-      })
+      .update(profile)
       .eq('id', user.id);
 
-    if (error) alert(error.message);
-    else {
-      alert("Profile updated successfully! Elite Terminal Synced.");
-      navigate('/dashboard');
+    if (error) {
+      alert("ስህተት ተፈጥሯል፦ " + error.message);
+    } else {
+      alert("ፕሮፋይልህ በትክክል ተስተካክሏል!");
     }
     setUpdating(false);
   };
 
-  const addSkill = (e) => {
-    e.preventDefault();
-    if (skillInput && !profile.skills.includes(skillInput)) {
-      setProfile({ ...profile, skills: [...profile.skills, skillInput] });
-      setSkillInput('');
-    }
-  };
-
-  const removeSkill = (skillToRemove) => {
-    setProfile({
-      ...profile,
-      skills: profile.skills.filter(s => s !== skillToRemove)
-    });
-  };
-
   if (loading) return (
     <div className="min-h-screen bg-slate-950 flex items-center justify-center font-black italic text-gold-500 animate-pulse tracking-widest uppercase text-xs">
-      Loading Profile Data...
+      Loading Secure Profile...
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white pb-20 pt-32 px-6 font-sans">
-      <div className="max-w-3xl mx-auto">
-        
-        <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-slate-500 hover:text-gold-500 transition-colors text-[10px] font-black uppercase tracking-widest mb-10 italic">
-          <ArrowLeft size={16} /> Return to Suite
-        </button>
+    <div className="min-h-screen bg-slate-950 text-white flex">
+      <Sidebar />
 
-        <div className="relative mb-12">
-          <div className="absolute -top-10 -left-10 w-40 h-40 bg-gold-500/10 rounded-full blur-3xl pointer-events-none"></div>
-          <h1 className="text-4xl md:text-5xl font-black italic uppercase tracking-tighter relative z-10">
-            Edit <span className="text-gold-500 font-black">Identity</span>
-          </h1>
-          <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest italic mt-2">Personal & Professional Synchronization</p>
-        </div>
-
-        <form onSubmit={handleUpdate} className="space-y-8">
-          
-          {/* Full Name */}
-          <div className="bg-white/5 border border-white/5 p-8 rounded-[2.5rem] backdrop-blur-xl space-y-4">
-            <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gold-500 italic">
-              <User size={14} /> Full Name
-            </label>
-            <input 
-              type="text" 
-              value={profile.full_name}
-              onChange={(e) => setProfile({...profile, full_name: e.target.value})}
-              className="w-full bg-slate-950 border border-white/10 rounded-2xl p-4 text-sm font-black italic focus:border-gold-500/50 transition-all outline-none"
-              placeholder="Enter your full name"
-            />
+      <div className="flex-1 flex flex-col min-h-screen overflow-y-auto pb-20">
+        <header className="pt-24 pb-12 px-10">
+          <div className="max-w-4xl">
+            <h1 className="text-5xl font-black italic uppercase tracking-tighter leading-none">
+              Account <span className="text-gold-500">Settings</span>
+            </h1>
+            <p className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-500 italic mt-4">
+              Manage your elite identity and preferences
+            </p>
           </div>
+        </header>
 
-          {/* Bio */}
-          <div className="bg-white/5 border border-white/5 p-8 rounded-[2.5rem] backdrop-blur-xl space-y-4">
-            <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gold-500 italic">
-              <FileText size={14} /> Professional Bio
-            </label>
-            <textarea 
-              value={profile.bio}
-              onChange={(e) => setProfile({...profile, bio: e.target.value})}
-              rows="4"
-              className="w-full bg-slate-950 border border-white/10 rounded-2xl p-4 text-xs font-medium italic focus:border-gold-500/50 transition-all outline-none resize-none leading-relaxed"
-              placeholder="Tell us about your professional journey..."
-            />
-          </div>
-
-          {/* Skills Management */}
-          <div className="bg-white/5 border border-white/5 p-8 rounded-[2.5rem] backdrop-blur-xl space-y-6">
-            <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gold-500 italic">
-              <Code size={14} /> Skill Arsenal
-            </label>
+        <main className="px-10 max-w-5xl w-full">
+          <form onSubmit={handleUpdate} className="grid grid-cols-1 lg:grid-cols-3 gap-10">
             
-            <div className="flex gap-2">
-              <input 
-                type="text" 
-                value={skillInput}
-                onChange={(e) => setSkillInput(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && addSkill(e)}
-                className="flex-1 bg-slate-950 border border-white/10 rounded-2xl p-4 text-sm font-black italic focus:border-gold-500/50 transition-all outline-none"
-                placeholder="e.g. React, UI/UX, Node.js"
-              />
-              <button 
-                onClick={addSkill}
-                className="bg-white/5 hover:bg-gold-500 hover:text-slate-950 px-6 rounded-2xl transition-all font-black uppercase italic text-[10px] border border-white/5"
-              >
-                Add
-              </button>
+            {/* Left: Avatar & Role */}
+            <div className="space-y-6">
+              <div className="bg-white/5 border border-white/5 p-8 rounded-[3rem] text-center relative overflow-hidden group">
+                <div className="relative z-10">
+                  <div className="w-24 h-24 bg-gold-500 rounded-3xl mx-auto flex items-center justify-center text-slate-950 text-4xl font-black mb-4 shadow-[0_0_30px_rgba(212,175,55,0.2)]">
+                    {profile.full_name?.charAt(0) || 'U'}
+                  </div>
+                  <button type="button" className="text-[9px] font-black uppercase tracking-widest text-gold-500 hover:text-white transition-colors flex items-center justify-center gap-2 mx-auto">
+                    <Camera size={12} /> Change Photo
+                  </button>
+                  <h3 className="mt-6 text-xl font-black italic uppercase">{profile.full_name}</h3>
+                  <p className="text-[10px] text-slate-500 font-bold uppercase tracking-[0.2em]">{profile.user_role}</p>
+                </div>
+              </div>
+
+              <div className="bg-gold-500/5 border border-gold-500/10 p-6 rounded-[2.5rem]">
+                 <h4 className="text-[10px] font-black uppercase text-gold-500 mb-2 flex items-center gap-2">
+                    <ShieldCheck size={14} /> Verification Status
+                 </h4>
+                 <p className="text-white font-bold italic text-sm">Verified Elite Member</p>
+              </div>
             </div>
 
-            <div className="flex flex-wrap gap-2">
-              {profile.skills.map((skill) => (
-                <span 
-                  key={skill} 
-                  className="bg-gold-500/10 border border-gold-500/20 text-gold-500 px-4 py-2 rounded-xl text-[10px] font-black uppercase italic tracking-widest flex items-center gap-2 group hover:border-red-500/50 hover:text-red-500 transition-all cursor-pointer"
-                  onClick={() => removeSkill(skill)}
-                >
-                  {skill} <span className="opacity-0 group-hover:opacity-100">×</span>
-                </span>
-              ))}
+            {/* Right: Forms */}
+            <div className="lg:col-span-2 space-y-8">
+              
+              {/* General Info */}
+              <div className="bg-white/5 border border-white/5 p-10 rounded-[3rem] space-y-6 backdrop-blur-md">
+                <h3 className="text-xs font-black uppercase tracking-[0.3em] text-slate-500 italic mb-4">General Information</h3>
+                
+                <div className="space-y-2">
+                  <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-2">Full Name</label>
+                  <div className="relative">
+                    <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600" size={16} />
+                    <input 
+                      type="text" 
+                      value={profile.full_name}
+                      onChange={(e) => setProfile({...profile, full_name: e.target.value})}
+                      className="w-full bg-slate-950/50 border border-white/5 rounded-2xl pl-12 pr-6 py-4 text-sm font-medium focus:border-gold-500 outline-none transition-all"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-2">Professional Bio</label>
+                  <textarea 
+                    rows="4"
+                    value={profile.bio}
+                    onChange={(e) => setProfile({...profile, bio: e.target.value})}
+                    placeholder="Tell the world about your expertise..."
+                    className="w-full bg-slate-950/50 border border-white/5 rounded-3xl px-6 py-4 text-sm font-medium focus:border-gold-500 outline-none transition-all italic"
+                  />
+                </div>
+              </div>
+
+              {/* Financial & Professional */}
+              <div className="bg-white/5 border border-white/5 p-10 rounded-[3rem] space-y-6">
+                <h3 className="text-xs font-black uppercase tracking-[0.3em] text-slate-500 italic mb-4">Financial & Professional</h3>
+                
+                <div className="space-y-2">
+                  <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-2">Bank Account Details (CBE/Telebirr)</label>
+                  <div className="relative">
+                    <Banknote className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600" size={16} />
+                    <input 
+                      type="text" 
+                      placeholder="Account Number or Wallet Phone"
+                      value={profile.bank_details}
+                      onChange={(e) => setProfile({...profile, bank_details: e.target.value})}
+                      className="w-full bg-slate-950/50 border border-white/5 rounded-2xl pl-12 pr-6 py-4 text-sm font-medium focus:border-gold-500 outline-none transition-all"
+                    />
+                  </div>
+                </div>
+
+                <div className="pt-4">
+                  <button 
+                    disabled={updating}
+                    className="w-full bg-gold-500 text-slate-950 font-black uppercase italic py-5 rounded-2xl flex items-center justify-center gap-3 hover:bg-white transition-all shadow-[0_20px_40px_rgba(212,175,55,0.1)] disabled:opacity-50"
+                  >
+                    {updating ? 'Processing...' : (
+                      <>Save Changes <CheckCircle size={18} /></>
+                    )}
+                  </button>
+                </div>
+              </div>
+
             </div>
-          </div>
-
-          {/* Save Button */}
-          <button 
-            type="submit" 
-            disabled={updating}
-            className="w-full bg-gold-500 text-slate-950 p-6 rounded-[2rem] font-black uppercase italic text-[12px] tracking-[0.2em] hover:scale-[1.02] active:scale-95 transition-all shadow-2xl shadow-gold-500/20 flex items-center justify-center gap-3"
-          >
-            {updating ? 'Synchronizing...' : <><Save size={18} /> Update Professional Profile</>}
-          </button>
-
-        </form>
+          </form>
+        </main>
       </div>
     </div>
   );

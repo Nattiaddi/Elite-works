@@ -38,6 +38,8 @@ import ReviewProposals from './pages/ReviewProposals';
 import JobDetails from './pages/JobDetails';
 import Freelancers from './pages/Freelancers';
 import ProfileUpdate from './pages/ProfileUpdate';
+import MyProposals from './pages/MyProposals';
+import AdminPanel from './pages/AdminPanel';
 
 // Stripe Public Key
 const stripePromise = loadStripe('pk_test_YourActualKeyHere'); 
@@ -63,7 +65,9 @@ function App() {
               <Route path="/jobs/:id" element={<JobDetails />} />
               <Route path="/profile-update" element={<ProfileUpdate />} />
               <Route path="/freelancers" element={<Freelancers />} />
-              
+              <Route path="/my-proposals" element={<MyProposals />} />
+              <Route path="/admin-command" element={<AdminPanel />} />
+
               {/* Gigs & Services */}
               <Route path="/gigs" element={<Gigs />} />
               <Route path="/create-gig" element={<CreateGig />} />

@@ -1,30 +1,28 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { supabase } from '../lib/supabaseClient';
-import { Send, User as UserIcon, Mail, ShieldAlert, Lock } from 'lucide-react';
+import Sidebar from '../components/Sidebar';
+import { Send, User, Search, MoreVertical, Paperclip } from 'lucide-react';
 
 const Messages = () => {
-  const [messages, setMessages] = useState([]);
+  const [chats, setChats] = useState([]); // የንግግሮች ዝርዝር
+  const [activeChat, setActiveChat] = useState(null); // የተመረጠው ሰው
+  const [messages, setMessages] = useState([]); // የጽሑፍ ልውውጦች
   const [newMessage, setNewMessage] = useState('');
-  const [chats, setChats] = useState([]);
-  const [selectedChat, setSelectedChat] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
   const scrollRef = useRef();
 
   useEffect(() => {
-    const setup = async () => {
+    const initChat = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       setCurrentUser(user);
-      if (user) fetchChats(user.id);
+      fetchChatList(user.id);
     };
-    setup();
+    initChat();
 
-    // Real-time listener: አዲስ መልዕክት ሲመጣ ወዲያው እንዲታይ
-    const channel = supabase.channel('chat_room')
-      .on('postgres_changes', { 
-        event: 'INSERT', 
-        schema: 'public', 
-        table: 'messages' 
-      }, (payload) => {
+    // Real-time listen for new messages
+    const channel = supabase
+      .channel('schema-db-changes')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, (payload) => {
         setMessages((prev) => [...prev, payload.new]);
       })
       .subscribe();
@@ -33,149 +31,167 @@ const Messages = () => {
   }, []);
 
   useEffect(() => {
+    if (activeChat) fetchMessages();
+  }, [activeChat]);
+
+  useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const fetchChats = async (userId) => {
-    // ማሳሰቢያ፡ እዚህ ጋር በዳታቤዝህ 'profiles' ወይም 'conversations' ቴብል መሠረት ዳታ መምጣት አለበት
-    // ለጊዜው በ Dummy ዳታ ሞልቼዋለሁ
-    setChats([
-      { id: '1', name: 'Elite Client', lastMsg: 'ስራው ላይ ጥያቄ አለኝ...' },
-      { id: '2', name: 'Natti Designer', lastMsg: 'ሎጎውን ጨርሻለሁ' }
-    ]);
+  const fetchChatList = async (userId) => {
+    // ማሳሰቢያ፡ ይህ ለቀላልነት ነው፤ በትክክለኛው ሲስተም 'distinct' ንግግሮችን መለየት ይፈልጋል
+    const { data } = await supabase
+      .from('profiles')
+      .select('id, full_name, user_role')
+      .not('id', 'eq', userId); 
+    setChats(data);
   };
 
-  const fetchMessages = async (chatId) => {
-    if (!currentUser) return;
+  const fetchMessages = async () => {
     const { data } = await supabase
       .from('messages')
       .select('*')
-      .or(`and(sender_id.eq.${currentUser.id},receiver_id.eq.${chatId}),and(sender_id.eq.${chatId},receiver_id.eq.${currentUser.id})`)
+      .or(`and(sender_id.eq.${currentUser.id},receiver_id.eq.${activeChat.id}),and(sender_id.eq.${activeChat.id},receiver_id.eq.${currentUser.id})`)
       .order('created_at', { ascending: true });
     setMessages(data || []);
   };
 
-  const handleSendMessage = async (e) => {
+  const sendMessage = async (e) => {
     e.preventDefault();
-    
-    // የደህንነት ጥበቃ (Regex for Links and Phones)
-    const urlPattern = /(https?:\/\/[^\s]+|www\.[^\s]+|[a-z0-9]+\.[a-z]{2,})/gi;
-    const phonePattern = /(\+?[0-9]{1,4}[-.\s]?)?(\(?\d{3}\)?[-.\s]?)?\d{3}[-.\s]?\d{4}/g;
+    if (!newMessage.trim() || !activeChat) return;
 
-    if (urlPattern.test(newMessage) || phonePattern.test(newMessage)) {
-      alert("SECURITY ALERT: Sharing personal contact info or external links is strictly prohibited in the Elite ecosystem!");
-      return;
-    }
-
-    if (!newMessage.trim() || !selectedChat) return;
+    const messageToSend = newMessage;
+    setNewMessage('');
 
     const { error } = await supabase.from('messages').insert([
       {
         sender_id: currentUser.id,
-        receiver_id: selectedChat.id,
-        content: newMessage // በዳታቤዝህ 'content' ወይም 'text' መሆኑን አረጋግጥ
+        receiver_id: activeChat.id,
+        content: messageToSend,
       }
     ]);
 
-    if (!error) setNewMessage('');
+    if (error) console.error(error);
   };
 
   return (
-    <div className="pt-24 min-h-screen bg-slate-950 px-6 pb-10 flex flex-col font-sans">
-      <div className="max-w-6xl mx-auto w-full flex-grow bg-slate-900/30 border border-white/5 rounded-[3rem] overflow-hidden flex shadow-2xl backdrop-blur-xl">
+    <div className="min-h-screen bg-slate-950 text-white flex">
+      <Sidebar />
+
+      <div className="flex-1 flex h-screen overflow-hidden">
         
-        {/* Sidebar - Chat List */}
-        <div className="w-1/3 border-r border-white/5 flex flex-col bg-slate-950/40">
-          <div className="p-8 border-b border-white/5 bg-white/5">
-            <h2 className="text-xl font-black italic text-white uppercase tracking-tighter flex items-center gap-2">
-              <Lock size={18} className="text-gold-500" /> Terminal
-            </h2>
+        {/* Chat List (Left) */}
+        <div className="w-80 border-r border-white/5 flex flex-col bg-slate-900/20">
+          <div className="p-8">
+            <h1 className="text-2xl font-black italic uppercase tracking-tighter">Messages</h1>
+            <div className="relative mt-6">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={14} />
+              <input 
+                type="text" 
+                placeholder="Search chats..." 
+                className="w-full bg-white/5 border border-white/5 rounded-xl py-3 pl-10 pr-4 text-[10px] font-bold uppercase tracking-widest focus:border-gold-500 outline-none transition-all"
+              />
+            </div>
           </div>
-          <div className="flex-grow overflow-y-auto">
-            {chats.map(chat => (
-              <div 
+
+          <div className="flex-1 overflow-y-auto px-4 space-y-2">
+            {chats.map((chat) => (
+              <button
                 key={chat.id}
-                onClick={() => { setSelectedChat(chat); fetchMessages(chat.id); }}
-                className={`p-6 border-b border-white/5 cursor-pointer transition-all hover:bg-gold-500/5 ${selectedChat?.id === chat.id ? 'bg-gold-500/10 border-r-4 border-r-gold-500' : ''}`}
+                onClick={() => setActiveChat(chat)}
+                className={`w-full flex items-center gap-4 p-4 rounded-[1.5rem] transition-all ${
+                  activeChat?.id === chat.id ? 'bg-gold-500 text-slate-950' : 'hover:bg-white/5 text-slate-400'
+                }`}
               >
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-2xl bg-slate-800 border border-white/5 flex items-center justify-center">
-                    <UserIcon className="w-5 h-5 text-gold-500" />
-                  </div>
-                  <div className="overflow-hidden">
-                    <h4 className="text-xs font-black text-white uppercase italic tracking-widest">{chat.name}</h4>
-                    <p className="text-[9px] text-slate-500 truncate mt-1 uppercase font-bold tracking-tight">{chat.lastMsg}</p>
-                  </div>
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-xs ${activeChat?.id === chat.id ? 'bg-slate-950 text-white' : 'bg-gold-500 text-slate-950'}`}>
+                  {chat.full_name.charAt(0)}
                 </div>
-              </div>
+                <div className="text-left overflow-hidden">
+                  <p className="font-black italic uppercase text-[10px] truncate">{chat.full_name}</p>
+                  <p className={`text-[8px] font-bold uppercase tracking-tighter ${activeChat?.id === chat.id ? 'text-slate-800' : 'text-slate-600'}`}>
+                    {chat.user_role}
+                  </p>
+                </div>
+              </button>
             ))}
           </div>
         </div>
 
-        {/* Chat Window */}
-        <div className="flex-grow flex flex-col bg-slate-950/20 relative">
-          {selectedChat ? (
+        {/* Chat Window (Right) */}
+        <div className="flex-1 flex flex-col relative">
+          {activeChat ? (
             <>
-              {/* Chat Header */}
-              <div className="p-6 border-b border-white/5 flex items-center justify-between bg-slate-900/50 backdrop-blur-md">
+              {/* Top Header */}
+              <div className="p-6 border-b border-white/5 flex items-center justify-between bg-slate-950/50 backdrop-blur-md">
                 <div className="flex items-center gap-4">
-                  <div className="w-8 h-8 rounded-xl bg-gold-500 flex items-center justify-center font-black text-slate-950 text-xs italic shadow-lg shadow-gold-500/20">
-                    {selectedChat.name.charAt(0)}
+                  <div className="w-10 h-10 rounded-xl bg-gold-500 flex items-center justify-center text-slate-950 font-black italic">
+                    {activeChat.full_name.charAt(0)}
                   </div>
                   <div>
-                    <h3 className="text-xs font-black text-white uppercase italic tracking-widest">{selectedChat.name}</h3>
-                    <p className="text-[8px] text-gold-500 font-bold uppercase tracking-widest animate-pulse">Encrypted Session Active</p>
+                    <h2 className="font-black italic uppercase tracking-tight">{activeChat.full_name}</h2>
+                    <p className="text-[8px] text-gold-500 font-bold uppercase tracking-[0.2em]">Online Now</p>
                   </div>
                 </div>
+                <MoreVertical className="text-slate-500 cursor-pointer" size={20} />
               </div>
 
-              {/* Messages Display */}
-              <div className="flex-grow p-8 overflow-y-auto space-y-6 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-gold-500/5 via-transparent to-transparent">
-                {messages.map((msg, idx) => (
-                  <div key={idx} className={`flex ${msg.sender_id === currentUser?.id ? 'justify-end' : 'justify-start'}`}>
-                    <div className={`max-w-[70%] px-6 py-4 rounded-3xl text-[11px] font-bold tracking-wide italic leading-relaxed shadow-xl ${
-                      msg.sender_id === currentUser?.id 
-                      ? 'bg-gold-500 text-slate-950 rounded-tr-none' 
-                      : 'bg-white/10 text-white rounded-tl-none border border-white/5'
-                    }`}>
-                      {msg.content || msg.text}
+              {/* Messages Area */}
+              <div className="flex-1 overflow-y-auto p-8 space-y-6">
+                {messages.map((msg, i) => {
+                  const isMine = msg.sender_id === currentUser.id;
+                  return (
+                    <div key={i} className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}>
+                      <div className={`max-w-[70%] p-5 rounded-[2rem] text-sm font-medium italic shadow-xl ${
+                        isMine 
+                        ? 'bg-gold-500 text-slate-950 rounded-tr-none' 
+                        : 'bg-white/5 text-white border border-white/5 rounded-tl-none'
+                      }`}>
+                        {msg.content}
+                        <p className={`text-[8px] mt-2 font-black uppercase tracking-tighter ${isMine ? 'text-slate-800' : 'text-slate-500'}`}>
+                          {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
                 <div ref={scrollRef} />
               </div>
 
               {/* Input Area */}
-              <div className="p-6 border-t border-white/5 bg-slate-900/50">
-                <div className="flex items-center gap-2 mb-3 text-amber-500/60">
-                  <ShieldAlert className="w-3 h-3" />
-                  <p className="text-[8px] font-black uppercase tracking-[0.2em] italic">
-                    Security: Communications are monitored for platform safety.
-                  </p>
-                </div>
-                <form onSubmit={handleSendMessage} className="flex gap-4">
+              <form onSubmit={sendMessage} className="p-8 bg-slate-950">
+                <div className="relative flex items-center gap-4 bg-white/5 border border-white/5 rounded-[2rem] p-2 pr-4 focus-within:border-gold-500/50 transition-all">
+                  <button type="button" className="p-4 text-slate-500 hover:text-gold-500 transition-colors">
+                    <Paperclip size={20} />
+                  </button>
                   <input 
-                    type="text"
+                    type="text" 
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
-                    placeholder="ENTER SECURE MESSAGE..."
-                    className="flex-grow bg-slate-950 border border-white/10 rounded-2xl px-6 py-4 text-white text-[10px] font-black tracking-widest outline-none focus:border-gold-500/50 transition-all uppercase italic"
+                    placeholder="Type your elite proposal..." 
+                    className="flex-1 bg-transparent border-none outline-none text-sm italic py-4"
                   />
-                  <button type="submit" className="bg-gold-500 text-slate-950 p-4 rounded-2xl hover:bg-white transition-all active:scale-95 shadow-lg shadow-gold-500/20">
-                    <Send className="w-5 h-5" />
+                  <button 
+                    type="submit"
+                    className="bg-gold-500 text-slate-950 p-4 rounded-2xl hover:bg-white transition-all shadow-lg active:scale-95"
+                  >
+                    <Send size={18} />
                   </button>
-                </form>
-              </div>
+                </div>
+              </form>
             </>
           ) : (
-            <div className="flex-grow flex flex-col items-center justify-center text-slate-600">
-              <div className="w-24 h-24 border border-white/5 rounded-[2.5rem] flex items-center justify-center mb-6 bg-white/5">
-                <Mail className="w-10 h-10 opacity-20 text-gold-500" />
+            <div className="flex-1 flex flex-col items-center justify-center text-center p-10">
+              <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mb-6 border border-white/5">
+                <MessageSquare className="text-slate-800" size={32} />
               </div>
-              <p className="text-[10px] font-black uppercase tracking-[0.4em] italic text-slate-500">Select a Secure Frequency</p>
+              <h3 className="text-xl font-black italic uppercase text-slate-500">Select a Conversation</h3>
+              <p className="text-[10px] font-black uppercase tracking-widest text-slate-700 mt-2">
+                Connect with clients or freelancers to start working.
+              </p>
             </div>
           )}
         </div>
+
       </div>
     </div>
   );
