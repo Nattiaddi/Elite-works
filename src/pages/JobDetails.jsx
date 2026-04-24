@@ -5,7 +5,7 @@ import Sidebar from '../components/Sidebar';
 import { 
   DollarSign, Clock, Tag, Send, 
   ChevronLeft, ShieldCheck, AlertCircle, Bookmark,
-  MessageSquare
+  MessageSquare 
 } from 'lucide-react';
 
 const JobDetails = () => {
@@ -33,10 +33,10 @@ const JobDetails = () => {
         
         if (isMounted) setJob(jobData);
 
-        // 2. Fetch User Profile & Interaction
-        const { data: { user } } = await supabase.auth.getUser();
+        // 2. Fetch Auth User
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
         
-        if (user && isMounted) {
+        if (user && isMounted && !authError) {
           const { data: userData } = await supabase
             .from('profiles')
             .select('*')
@@ -56,17 +56,14 @@ const JobDetails = () => {
           if (saved) setIsSaved(true);
         }
       } catch (error) {
-        console.error("Error fetching details:", error);
+        console.error("Error:", error);
       } finally {
         if (isMounted) setLoading(false);
       }
     };
 
     fetchJobAndUser();
-
-    return () => {
-      isMounted = false;
-    };
+    return () => { isMounted = false; };
   }, [id]);
 
   const handleSave = async () => {
@@ -206,11 +203,6 @@ const JobDetails = () => {
                 >
                   <Bookmark size={16} fill={isSaved ? "currentColor" : "none"} /> {isSaved ? 'Saved' : 'Save for Later'}
                 </button>
-                {profile?.user_role !== 'freelancer' && (
-                  <p className="flex items-center gap-2 text-red-500 text-[9px] font-black uppercase tracking-tighter italic mt-4 text-center">
-                    <AlertCircle size={14} /> Only Freelancer accounts can apply.
-                  </p>
-                )}
               </form>
             </div>
           </aside>
