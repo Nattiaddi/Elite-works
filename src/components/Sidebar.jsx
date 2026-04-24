@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { MessageSquare, ... } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
 import { 
@@ -51,8 +50,8 @@ const Sidebar = () => {
   const isActive = (path) => location.pathname === path;
 
   return (
-    <aside className="w-64 min-h-screen bg-slate-950 border-r border-white/5 p-6 hidden lg:flex flex-col sticky top-0">
-      <div className="mb-12 px-2 text-left">
+    <aside className="w-64 min-h-screen bg-slate-950 border-r border-white/5 p-6 hidden lg:flex flex-col sticky top-0 text-left">
+      <div className="mb-12 px-2">
         <h2 className="text-xs font-black uppercase tracking-[0.3em] text-slate-500 italic">Menu</h2>
       </div>
 
@@ -74,7 +73,7 @@ const Sidebar = () => {
 
         {adminLinks.length > 0 && (
           <div className="mt-8 pt-6 border-t border-white/5">
-            <h2 className="text-[9px] font-black uppercase tracking-[0.3em] text-red-500 italic mb-4 px-2 text-left">Control</h2>
+            <h2 className="text-[9px] font-black uppercase tracking-[0.3em] text-red-500 italic mb-4 px-2">Control</h2>
             {adminLinks.map((item) => (
               <Link
                 key={item.name}
@@ -93,7 +92,7 @@ const Sidebar = () => {
         )}
 
         <div className="mt-8 pt-6 border-t border-white/5">
-          <h2 className="text-[9px] font-black uppercase tracking-[0.3em] text-slate-600 italic mb-4 px-2 text-left">Action</h2>
+          <h2 className="text-[9px] font-black uppercase tracking-[0.3em] text-slate-600 italic mb-4 px-2">Action</h2>
           {roleLinks.map((item) => (
             <Link
               key={item.name}
@@ -112,7 +111,7 @@ const Sidebar = () => {
       </nav>
 
       <div className="mt-auto bg-white/5 rounded-[2rem] p-4 border border-white/5">
-        <div className="flex items-center gap-3 mb-3 text-left">
+        <div className="flex items-center gap-3 mb-3">
           <div className="w-8 h-8 rounded-lg bg-gold-500 flex items-center justify-center text-slate-950 font-black text-xs">
             {profile?.full_name?.charAt(0) || 'E'}
           </div>
