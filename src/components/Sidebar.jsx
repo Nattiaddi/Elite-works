@@ -7,7 +7,7 @@ import {
   Search, 
   PlusCircle, 
   User, 
-  MessageSquare,
+  MessageSquare, // ይሄ መኖሩን አረጋግጥ
   ShieldAlert,
   Wallet
 } from 'lucide-react';
