@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
-import PaymentGateway from '../components/PaymentGateway'; // ኢምፖርት መደረጉን ያረጋግጡ
+import PaymentGateway from '../components/PaymentGateway'; 
 import { categories as categoryData } from '../constants/categories';
 import { 
   PlusCircle, 
@@ -12,7 +12,7 @@ import {
   AlignLeft,
   AlertTriangle,
   ChevronLeft
-} from 'lucide-react';
+} from 'lucide-material'; // ወይም 'lucide-react' እንደ አጠቃቀምህ
 
 const PostJob = () => {
   const navigate = useNavigate();
@@ -71,7 +71,6 @@ const PostJob = () => {
       alert("Error posting job: " + error.message);
       setLoading(false);
     } else {
-      // ስራው በተሳካ ሁኔታ ሲለጠፍ የክፍያ ገጹን አሳይ
       setPostedJobAmount(budgetValue);
       setShowPayment(true);
       setLoading(false);
@@ -79,21 +78,23 @@ const PostJob = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white flex">
+    <div className="min-h-screen bg-slate-950 text-white flex text-left">
+      {/* 1. Sidebar */}
       <Sidebar />
 
+      {/* 2. Main Content */}
       <div className="flex-1 flex flex-col min-h-screen overflow-y-auto pb-20">
         
-        {/* --- የክፍያ ገጽ (ከስራ መለጠፍ በኋላ የሚመጣ) --- */}
         {showPayment ? (
-          <div className="py-20 px-10 max-w-4xl mx-auto w-full">
-             <header className="mb-12 text-center">
-                <h1 className="text-5xl font-black italic uppercase tracking-tighter">
-                  Fund Your <span className="text-gold-500">Project</span>
-                </h1>
-                <p className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-500 italic mt-4">
-                  Secure ${postedJobAmount} in escrow to activate your listing
-                </p>
+          /* --- የክፍያ ገጽ --- */
+          <div className="py-20 px-10 max-w-4xl mx-auto w-full pt-32">
+            <header className="mb-12 text-center">
+              <h1 className="text-5xl font-black italic uppercase tracking-tighter">
+                Fund Your <span className="text-gold-500">Project</span>
+              </h1>
+              <p className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-500 italic mt-4">
+                Secure ${postedJobAmount} in escrow to activate your listing
+              </p>
             </header>
 
             <PaymentGateway 
@@ -105,7 +106,7 @@ const PostJob = () => {
               onClick={() => setShowPayment(false)}
               className="mt-12 mx-auto flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.3em] text-slate-600 hover:text-white transition-all"
             >
-              <ChevronLeft size={14} /> Back to Dashboard
+              <ChevronLeft size={14} /> Back to Post Job
             </button>
           </div>
         ) : (
@@ -127,7 +128,6 @@ const PostJob = () => {
               <form onSubmit={handleSubmit} className="space-y-8 bg-white/5 border border-white/5 p-10 rounded-[3.5rem] backdrop-blur-xl relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-gold-500/5 blur-[100px] pointer-events-none"></div>
 
-                {/* Job Title */}
                 <div className="space-y-2 relative z-10">
                   <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Job Title</label>
                   <div className="relative">
@@ -144,7 +144,6 @@ const PostJob = () => {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  {/* Category */}
                   <div className="space-y-2">
                     <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Category</label>
                     <div className="relative">
@@ -163,7 +162,6 @@ const PostJob = () => {
                     </div>
                   </div>
 
-                  {/* Budget */}
                   <div className="space-y-2">
                     <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Budget ($)</label>
                     <div className="relative">
@@ -180,7 +178,6 @@ const PostJob = () => {
                   </div>
                 </div>
 
-                {/* Description */}
                 <div className="space-y-2">
                   <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Project Description</label>
                   <div className="relative">
@@ -196,7 +193,6 @@ const PostJob = () => {
                   </div>
                 </div>
 
-                {/* Action Button */}
                 <div className="pt-6">
                   {profile?.user_role === 'client' ? (
                     <button 

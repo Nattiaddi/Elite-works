@@ -26,7 +26,6 @@ const ManageProjects = () => {
       setProfile(userData);
 
       if (userData.user_role === 'client') {
-        // ደንበኛው የለጠፋቸው ስራዎች ከፕሮፖዛል ብዛት ጋር
         const { data: jobs } = await supabase
           .from('jobs')
           .select('*, proposals(count)')
@@ -34,7 +33,6 @@ const ManageProjects = () => {
           .order('created_at', { ascending: false });
         setMyJobs(jobs || []);
       } else {
-        // ፍሪላንሰሩ የላካቸው ፕሮፖዛሎች ከስራው ዝርዝር ጋር
         const { data: proposals } = await supabase
           .from('proposals')
           .select('*, jobs(title, budget, category)')
@@ -48,10 +46,13 @@ const ManageProjects = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white flex">
+    <div className="min-h-screen bg-slate-950 text-white flex text-left">
+      {/* 1. Sidebar በቋሚነት በግራ በኩል */}
       <Sidebar />
 
+      {/* 2. Main Content Area */}
       <div className="flex-1 flex flex-col min-h-screen overflow-y-auto pb-20">
+        
         <header className="pt-24 pb-12 px-10">
           <h1 className="text-5xl font-black italic uppercase tracking-tighter">
             Manage <span className="text-gold-500">Projects</span>
@@ -82,7 +83,7 @@ const ManageProjects = () => {
                           <h3 className="text-lg font-black italic uppercase tracking-tight group-hover:text-gold-500 transition-colors">{job.title}</h3>
                           <div className="flex gap-4 mt-1">
                             <span className="text-[8px] font-black uppercase text-slate-500 italic">Budget: ${job.budget}</span>
-                            <span className="text-[8px] font-black uppercase text-gold-500 italic">{job.proposals[0]?.count || 0} Proposals</span>
+                            <span className="text-[8px] font-black uppercase text-gold-500 italic">{job.proposals?.[0]?.count || 0} Proposals</span>
                           </div>
                         </div>
                       </div>
@@ -129,7 +130,7 @@ const ManageProjects = () => {
   );
 };
 
-// ንዑስ ኮምፖነንቶች (Sub-components)
+// ንዑስ ኮምፖነንቶች
 const StatusBadge = ({ status }) => {
   const styles = {
     pending: "bg-blue-500/10 text-blue-400 border-blue-500/20",
