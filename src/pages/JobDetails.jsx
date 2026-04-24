@@ -20,6 +20,8 @@ const JobDetails = () => {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
+    let isMounted = true;
+
     const fetchJobAndUser = async () => {
       try {
         // 1. Fetch Job Details
@@ -29,19 +31,20 @@ const JobDetails = () => {
           .eq('id', id)
           .maybeSingle();
         
-        setJob(jobData);
+        if (isMounted) setJob(jobData);
 
-        // 2. Fetch User Profile
+        // 2. Fetch User Profile & Interaction
         const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
+        
+        if (user && isMounted) {
           const { data: userData } = await supabase
             .from('profiles')
             .select('*')
             .eq('id', user.id)
             .maybeSingle();
+          
           setProfile(userData);
 
-          // Check if job is saved
           const { data: saved } = await supabase
             .from('job_interactions')
             .select('*')
@@ -49,15 +52,21 @@ const JobDetails = () => {
             .eq('user_id', user.id)
             .eq('interaction_type', 'saved')
             .maybeSingle();
+          
           if (saved) setIsSaved(true);
         }
       } catch (error) {
         console.error("Error fetching details:", error);
       } finally {
-        setLoading(false);
+        if (isMounted) setLoading(false);
       }
     };
+
     fetchJobAndUser();
+
+    return () => {
+      isMounted = false;
+    };
   }, [id]);
 
   const handleSave = async () => {
@@ -107,7 +116,7 @@ const JobDetails = () => {
   );
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white flex font-sans">
+    <div className="min-h-screen bg-slate-950 text-white flex font-sans text-left">
       <Sidebar />
       <div className="flex-1 flex flex-col min-h-screen overflow-y-auto pb-20">
         <header className="pt-24 pb-12 px-10">
@@ -118,7 +127,7 @@ const JobDetails = () => {
             <ChevronLeft size={14} /> Back to Market
           </button>
           
-          <div className="max-w-5xl text-left">
+          <div className="max-w-5xl">
             <h1 className="text-4xl md:text-6xl font-black italic uppercase tracking-tighter leading-tight text-white">
               {job?.title}
             </h1>
@@ -141,18 +150,18 @@ const JobDetails = () => {
           <div className="lg:col-span-2 space-y-10">
             <div className="bg-white/5 border border-white/5 p-10 rounded-[3rem] backdrop-blur-md relative overflow-hidden">
                <div className="absolute top-0 right-0 w-32 h-32 bg-gold-500/5 blur-3xl"></div>
-               <h3 className="text-xs font-black uppercase tracking-[0.3em] text-gold-500 italic mb-6 text-left">Project Brief</h3>
-               <p className="text-slate-300 text-lg leading-relaxed italic font-medium whitespace-pre-wrap text-left">
+               <h3 className="text-xs font-black uppercase tracking-[0.3em] text-gold-500 italic mb-6">Project Brief</h3>
+               <p className="text-slate-300 text-lg leading-relaxed italic font-medium whitespace-pre-wrap">
                  {job?.description}
                </p>
             </div>
 
             <div className="bg-slate-900/40 border border-white/5 p-8 rounded-[2.5rem] flex items-center justify-between">
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-4 text-left">
                 <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center font-black italic text-gold-500">
                   {job?.profiles?.full_name?.charAt(0)}
                 </div>
-                <div className="text-left">
+                <div>
                   <p className="text-[8px] font-black uppercase text-slate-500 tracking-widest leading-none">Posted By</p>
                   <h4 className="text-white font-black italic uppercase mt-1">{job?.profiles?.full_name}</h4>
                 </div>
@@ -166,18 +175,18 @@ const JobDetails = () => {
 
           <aside className="lg:col-span-1">
             <div className="bg-white/5 border border-white/5 p-8 rounded-[3rem] sticky top-32 backdrop-blur-xl border-t-gold-500/20 shadow-2xl">
-              <h3 className="text-xl font-black italic uppercase tracking-tight mb-8 text-left text-white">Send Proposal</h3>
+              <h3 className="text-xl font-black italic uppercase tracking-tight mb-8 text-white">Send Proposal</h3>
               <form onSubmit={handleSubmitProposal} className="space-y-6">
-                <div className="space-y-2 text-left">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-2">Your Bid ($)</label>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-2 block">Your Bid ($)</label>
                   <input 
                     type="number" required placeholder="Enter amount" value={bidAmount}
                     onChange={(e) => setBidAmount(e.target.value)}
                     className="w-full bg-slate-950/50 border border-white/10 rounded-2xl px-6 py-4 text-white focus:border-gold-500 outline-none transition-all font-black italic"
                   />
                 </div>
-                <div className="space-y-2 text-left">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-2">Cover Letter</label>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-2 block">Cover Letter</label>
                   <textarea 
                     rows="5" required placeholder="Why are you the best fit?" value={coverLetter}
                     onChange={(e) => setCoverLetter(e.target.value)}
