@@ -12,7 +12,7 @@ import {
   AlignLeft,
   AlertTriangle,
   ChevronLeft
-} from 'lucide-material'; // ወይም 'lucide-react' እንደ አጠቃቀምህ
+} from 'lucide-react'; // ✅ እዚህ ጋር 'lucide-react' መሆኑን አረጋግጥ
 
 const PostJob = () => {
   const navigate = useNavigate();
@@ -79,10 +79,8 @@ const PostJob = () => {
 
   return (
     <div className="min-h-screen bg-slate-950 text-white flex text-left">
-      {/* 1. Sidebar */}
       <Sidebar />
 
-      {/* 2. Main Content */}
       <div className="flex-1 flex flex-col min-h-screen overflow-y-auto pb-20">
         
         {showPayment ? (
